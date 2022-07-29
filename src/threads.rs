@@ -5,8 +5,8 @@ use std::{sync::{
 }, collections::{HashMap, HashSet}};
 
 use crate::{
-    commands::{self, ODriveCommand},
-    canframe::{ODriveCANFrame, ThreadCANFrame, CANRequest}, response::ODriveResponse,
+    state::{ODriveCommand},
+    canframe::{ODriveCANFrame, ThreadCANFrame, CANRequest}, response::ODriveResponse, state::ReadComm,
 };
 
 pub(crate) trait CANThreadCommunicator {
@@ -199,18 +199,18 @@ impl ReadOnlyCANThread {
     ) -> Self {
         CANThreadCommunicator::new(thread_name, requester, receiver, threads_alive)
     }
-    pub fn request(&self, axis: u32, cmd: commands::ReadComm) -> ODriveResponse {
+    pub fn request(&self, axis: u32, cmd: ReadComm) -> ODriveResponse {
         CANThreadCommunicator::request(
             self,
             CANRequest {
                 axis,
-                cmd: commands::ODriveCommand::Read(cmd),
+                cmd: ODriveCommand::Read(cmd),
                 data: [0; 8],
             },
         )
     }
 
-    pub fn request_many(&self, messages: Vec<(u32, commands::ReadComm)>) -> Vec<ODriveResponse> {
+    pub fn request_many(&self, messages: Vec<(u32, ReadComm)>) -> Vec<ODriveResponse> {
         let requests = messages
             .iter()
             .map(|(axis, cmd)| ODriveCANFrame {
@@ -233,7 +233,7 @@ mod tests {
     use std::{sync::{atomic::AtomicBool, Arc}};
 
     use crate::{
-        commands::{ODriveCommand, ReadComm},
+        state::{ODriveCommand, ReadComm},
         canframe::{ThreadCANFrame, CANRequest},
         tests::ThreadStub,
         threads::CANThreadCommunicator, response::{ErrorResponse, ODriveError},

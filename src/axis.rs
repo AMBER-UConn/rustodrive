@@ -2,7 +2,7 @@
 #![allow(unused_variables)]
 
 use crate::{
-    commands::{ODriveAxisState, ODriveCommand::{Read, Write}, WriteComm::*, ReadComm::*, ControlMode, InputMode},
+    state::{ODriveAxisState, ODriveCommand::{Read, Write}, WriteComm::*, ReadComm::*, ControlMode, InputMode},
     canframe::{ticket, CANRequest},
     utils::{combine_data, float_to_data},
 };

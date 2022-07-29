@@ -22,7 +22,7 @@ We intend to implement the remaining supported [CAN messages](https://docs.odriv
 // main.rs
 use rustodrive::{
     canproxy::CANProxy,
-    commands::{ODriveAxisState::*, ControlMode, InputMode},
+    state::{ODriveAxisState::*, ControlMode, InputMode},
     odrivegroup::ODriveGroup,
     threads::ReadWriteCANThread,
 };

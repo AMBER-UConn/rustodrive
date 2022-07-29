@@ -1,5 +1,5 @@
-use crate::commands::{self, ReadComm};
-use crate::commands::ODriveCommand;
+use crate::state::{self, ReadComm};
+use crate::state::ODriveCommand;
 use socketcan::CANFrame;
 
 pub type CANRequest = ODriveCANFrame;
@@ -41,13 +41,13 @@ impl ODriveCANFrame {
         let cmd_id = can_id & 0x1F;
 
         // Then try converting to a write command
-        match TryInto::<commands::WriteComm>::try_into(cmd_id) {
+        match TryInto::<state::WriteComm>::try_into(cmd_id) {
             Ok(cmd) => return ODriveCommand::Write(cmd),
             Err(_) => {}
         }
 
         // Try first converting to a read command
-        match TryInto::<commands::ReadComm>::try_into(cmd_id) {
+        match TryInto::<state::ReadComm>::try_into(cmd_id) {
             Ok(cmd) => return ODriveCommand::Read(cmd),
             Err(_) => panic!("CAN ID {} not able to be converted to a command", can_id),
         }
@@ -84,7 +84,7 @@ pub struct ThreadCANFrame {
 #[cfg(test)]
 mod tests {
     use crate::{
-        commands::{ODriveCommand, ReadComm, WriteComm},
+        state::{ODriveCommand, ReadComm, WriteComm},
         canframe::{CANRequest, CANResponse},
     };
 

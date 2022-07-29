@@ -5,7 +5,7 @@ use std::sync::Arc;
 use std::thread::JoinHandle;
 
 use crate::cansocket::CANSocket;
-use crate::commands::ODriveCommand;
+use crate::state::ODriveCommand;
 use crate::canframe::{CANResponse, ThreadCANFrame, ODriveCANFrame};
 use crate::response::{ODriveResponse, ResponseType, ErrorResponse, ODriveError};
 use crate::threads::{ReadOnlyCANThread, ReadWriteCANThread};
@@ -67,7 +67,7 @@ impl CANProxy {
     /// ```
     /// use rustodrive::canproxy::CANProxy;
     /// use rustodrive::canframe::CANRequest;
-    /// use rustodrive::commands::{ODriveCommand::Read, ReadComm};
+    /// use rustodrive::state::{ODriveCommand::Read, ReadComm};
     ///
     /// let mut can_proxy = CANProxy::new("can0");
     /// can_proxy.register_rw("thread 1", |can_read_write| {
@@ -126,7 +126,7 @@ impl CANProxy {
     /// # Example
     /// ```
     /// use rustodrive::canproxy::CANProxy;
-    /// use rustodrive::commands::ReadComm;
+    /// use rustodrive::state::ReadComm;
     ///
     /// let mut can_proxy = CANProxy::new("can0");
     /// can_proxy.register_ro("thread 1", |can_read| {
@@ -258,8 +258,8 @@ impl CANProxy {
     /// This functions takes any CAN messages that were sent by various
     /// registered threads and then sends them off to the CAN bus. 
     /// 
-    /// If it is a `commands::Read` command, then we save it for later and wait for a response.
-    /// If it is a `commands::Write` command, then we can respond with `ODriveResponse::ReqReceived`
+    /// If it is a `ODriveCommand::Read`, then we save it for later and wait for a response.
+    /// If it is a `ODriveCommand::Write`, then we can respond with `ODriveResponse::ReqReceived`
     /// as soon as the CAN bus accepts the message without error.
     /// 
     /// If there is an error in connecting to the CAN bus, this immediately
@@ -300,7 +300,7 @@ impl CANProxy {
         }
     }
 
-    /// This function reads from the CAN socket. If there is a `commands::Write`
+    /// This function reads from the CAN socket. If there is a `ODriveCommand::Write`
     /// request waiting for a response from the CAN bus, this function
     /// will respond to the appropriate thread with a [`ODriveResponse`]
     /// containing the data of the response. 
@@ -458,7 +458,7 @@ mod tests {
     use std::{sync::mpsc::channel, time::Duration};
 
     use crate::{
-        commands::{ODriveCommand, ReadComm, WriteComm},
+        state::{ODriveCommand, ReadComm, WriteComm},
         canframe::{CANRequest}, tests::wait_for_msgs, response::{ManyResponses, ResponseType},
     };
 
