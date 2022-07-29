@@ -1,4 +1,6 @@
-`rustodrive` is a client library for communicating with ODrives using the CAN protocol. 
+
+# rustodrive
+is a WIP rust client library for communicating with ODrives using the CAN protocol. 
 
 It is more than a simple CAN sender/receiver and has many convenience structs/methods alongside support for multiple threads sending and receiving safely, loosely following the Command Query Responsibility Segregation (CQRS) paradigm. Only one thread is given permission to send commands that can modify the state of the ODrive while other threads have permission to request any data that doesn't change state. 
 
