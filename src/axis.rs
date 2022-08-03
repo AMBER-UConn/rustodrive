@@ -27,6 +27,10 @@ impl<'a> Axis<'a> {
         }
     }
 
+    pub fn heartbeat(&self) -> CANRequest {
+        ticket(*self.id, Read(Heartbeat), [0; 8])
+    }
+
     /// This generates the command to set the state for the `Axis` object in question
     pub fn set_state(&self, state: ODriveAxisState) -> CANRequest {
         ticket(
@@ -126,3 +130,4 @@ impl<'a> Motor<'a> {
         unimplemented!()
     }
 }
+
