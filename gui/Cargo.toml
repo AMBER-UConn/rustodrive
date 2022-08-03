@@ -8,7 +8,6 @@ edition = "2021"
 [features]
 
 [dependencies]
-rustodrive = {path = "../rustodrive"}
 glium = { version = "0.30.2", default-features = true }
 imgui = {version = "0.8.2", features = ["tables-api"]}
 imgui-glium-renderer = "0.8.2"

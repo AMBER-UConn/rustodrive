@@ -1,5 +1,3 @@
-use core::fmt;
-
 use crate::{back_to_enum};
 
 back_to_enum! {
@@ -65,7 +63,6 @@ pub enum ODriveCommand {
 
 back_to_enum! {
     /// Documentation: <https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html?highlight=axisstate#ODrive.Axis.AxisState>
-    #[derive(Debug, Clone)]
     pub enum ODriveAxisState {
         Undefined = 0x0,
         Idle = 0x1,
@@ -80,12 +77,6 @@ back_to_enum! {
         Homing = 0xB,
         EncoderHallPolarityCalib = 0xC,
         EncoderHallPhaseCalib = 0xD,
-    }
-}
-
-impl fmt::Display for ODriveAxisState {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
     }
 }
 
