@@ -2,8 +2,13 @@
 #![allow(unused_variables)]
 
 use crate::{
-    state::{ODriveAxisState, ODriveCommand::{Read, Write}, WriteComm::*, ReadComm::*, ControlMode, InputMode},
     canframe::{ticket, CANRequest},
+    state::{
+        ControlMode, InputMode, ODriveAxisState,
+        ODriveCommand::{Read, Write},
+        ReadComm::*,
+        WriteComm::*,
+    },
     utils::{combine_data, float_to_data},
 };
 
@@ -27,8 +32,12 @@ impl<'a> Axis<'a> {
         }
     }
 
-    pub fn heartbeat(&self) -> CANRequest {
-        ticket(*self.id, Read(Heartbeat), [0; 8])
+    pub fn get_heartbeat(&self) -> CANRequest {
+        ticket(
+            *self.id, 
+            Read(Heartbeat), 
+            [0; 8],
+        )
     }
 
     /// This generates the command to set the state for the `Axis` object in question
@@ -37,6 +46,14 @@ impl<'a> Axis<'a> {
             *self.id,
             Write(SetAxisRequestedState),
             [state as u8, 0, 0, 0, 0, 0, 0, 0],
+        )
+    }
+
+    pub fn get_temperature(&self) -> CANRequest {
+        ticket(
+            *self.id,
+            Read(GetTemperature),
+            [0; 8],
         )
     }
 
@@ -50,14 +67,26 @@ impl<'a> Encoder<'a> {
     pub fn new(id: &'a AxisID) -> Self {
         Encoder { id }
     }
-    fn get_error() {
-        unimplemented!()
+    fn get_error(&self) -> CANRequest {
+        ticket(
+            *self.id,
+            Read(EncoderError),
+            [0; 8],
+        )
     }
     fn get_count(&self) -> CANRequest {
-        return ticket(*self.id, Read(GetEncoderCount), [0; 8]);
+        ticket(
+            *self.id, 
+            Read(GetEncoderCount), 
+            [0; 8],
+        )
     }
-    fn get_estimate() {
-        unimplemented!()
+    fn get_estimate(&self) -> CANRequest {
+        ticket(
+            *self.id,
+            Read(GetEncoderEstimates),
+            [0; 8],
+        )
     }
     fn set_linear_count() {
         unimplemented!()
@@ -85,8 +114,12 @@ impl<'a> Motor<'a> {
         Motor { id }
     }
 
-    fn get_error() {
-        unimplemented!()
+    fn get_error(&self) -> CANRequest {
+        ticket(
+            *self.id,
+            Read(MotorError),
+            [0; 8],
+        )
     }
     fn get_sensorless_error() {
         unimplemented!()
@@ -96,16 +129,28 @@ impl<'a> Motor<'a> {
         unimplemented!()
     }
     pub fn set_control_mode(&self, control: ControlMode, input: InputMode) -> CANRequest {
-        ticket(*self.id, Write(SetControllerMode), [control as u8, 0, 0, 0, input as u8, 0, 0, 0])
+        ticket(
+            *self.id,
+            Write(SetControllerMode),
+            [control as u8, 0, 0, 0, input as u8, 0, 0, 0],
+        )
     }
 
     pub fn set_input_pos(&self, rot: f32) -> CANRequest {
         let data = combine_data(float_to_data(rot), [0; 4]);
-        ticket(*self.id, Write(SetInputPosition), data)
+        ticket(
+            *self.id, 
+            Write(SetInputPosition), 
+            data
+        )
     }
     pub fn set_input_vel(&self, speed: f32) -> CANRequest {
         let data = combine_data(float_to_data(speed), [0; 4]);
-        ticket(*self.id, Write(SetInputVelocity), data)
+        ticket(
+            *self.id, 
+            Write(SetInputVelocity), 
+            data
+        )
     }
     fn set_input_torque() {
         unimplemented!()
@@ -130,4 +175,3 @@ impl<'a> Motor<'a> {
         unimplemented!()
     }
 }
-

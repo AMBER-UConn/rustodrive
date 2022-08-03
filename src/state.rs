@@ -10,7 +10,7 @@ back_to_enum! {
         GetEncoderEstimates = 0x009,
         GetEncoderCount = 0x00A,
         GetIQSetpoint = 0x014,
-        GetSensorlessEstimates = 0x015,
+        GetTemperature = 0x015,
         GetVBusVoltage = 0x017,
     }
 }
