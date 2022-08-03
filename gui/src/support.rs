@@ -24,8 +24,9 @@ pub fn init() -> System {
 
     let event_loop = glium::glutin::event_loop::EventLoop::new();
     let window_builder = glium::glutin::window::WindowBuilder::new()
-        .with_inner_size(glium::glutin::dpi::LogicalSize::new(1024f32, 768f32))
-        .with_title("Hello World");
+        .with_inner_size(glium::glutin::dpi::LogicalSize::new(1280f32, 720f32))
+        .with_title("rustodrive")
+        .with_resizable(true);
     let context_builder = glium::glutin::ContextBuilder::new();
 
     let display = glium::Display::new(window_builder, context_builder, &event_loop).unwrap();
@@ -50,25 +51,6 @@ pub fn init() -> System {
     // on two different screens, and thus we do not need to scale this
     // value (as the scaling is handled by winit)
     let font_size = 13.0;
-
-    // imgui_context.fonts().add_font(&[
-    //     FontSource::TtfData {
-    //         data: include_bytes!("../fonts/Roboto-Regular.ttf"),
-    //         size_pixels: font_size,
-    //         config: Some(FontConfig {
-    //             // As imgui-glium-renderer isn't gamma-correct with
-    //             // it's font rendering, we apply an arbitrary
-    //             // multiplier to make the font a bit "heavier". With
-    //             // default imgui-glow-renderer this is unnecessary.
-    //             rasterizer_multiply: 1.5,
-    //             // Oversampling font helps improve text rendering at
-    //             // expense of larger font atlas texture.
-    //             oversample_h: 4,
-    //             oversample_v: 4,
-    //             ..FontConfig::default()
-    //         }),
-    //     },
-    // ]);
 
     System {
         event_loop,
@@ -115,10 +97,13 @@ impl System {
                 if !run {
                     *control_flow = ControlFlow::Exit;
                 }
-
+                
                 let gl_window = display.gl_window();
+                gl_window.window().set_decorations(false);
+
                 let mut target = display.draw();
-                target.clear_color_srgb(1.0, 1.0, 1.0, 1.0);
+                target.clear_color_srgb(177.0, 225.0, 227.0, 1.0);
+
                 platform.prepare_render(&ui, gl_window.window());
                 let draw_data = ui.render();
                 renderer

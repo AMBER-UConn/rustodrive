@@ -1,2 +1,6 @@
 pub mod support;
-use glium;
+pub mod ui_test;
+#[path = "./views/views.rs"]
+mod views;
+
+mod window;
