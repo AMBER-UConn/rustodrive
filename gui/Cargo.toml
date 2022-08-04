@@ -16,4 +16,6 @@ imgui-glium-renderer = "0.8.2"
 imgui-winit-support = "0.8.2"
 clipboard = "0.5"
 
+strum = "0.24"
+
 [dev-dependencies]

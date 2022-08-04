@@ -1,9 +1,9 @@
 use imgui::{Window, Ui};
 
-use crate::window::AppState;
+use crate::app_state::{StateParam};
 
-pub fn detail(state: &mut AppState, ui: &Ui) {
-    for (odrive_id, window_open) in state.odrive_details.iter_mut() {
+pub fn detail(state: &mut StateParam, ui: &Ui) {
+    for (odrive_id, window_open) in state.ui.odrive_details.iter_mut() {
         if *window_open {
             Window::new(format!("ODrive {}", odrive_id))
                 .opened(window_open)

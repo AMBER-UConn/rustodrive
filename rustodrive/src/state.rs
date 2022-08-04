@@ -1,5 +1,7 @@
 use core::fmt;
 
+use strum::{EnumString, EnumIter, IntoEnumIterator};
+use std::str::FromStr;
 use crate::{back_to_enum};
 
 back_to_enum! {
@@ -65,7 +67,7 @@ pub enum ODriveCommand {
 
 back_to_enum! {
     /// Documentation: <https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html?highlight=axisstate#ODrive.Axis.AxisState>
-    #[derive(Debug, Clone, PartialEq, PartialOrd)]
+    #[derive(Debug, Copy, Clone, PartialEq, PartialOrd, EnumIter, EnumString)]
     pub enum ODriveAxisState {
         Undefined = 0x0,
         Idle = 0x1,

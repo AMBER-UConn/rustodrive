@@ -1,7 +1,7 @@
-use crate::{readings::ODriveReadings, window::AppState};
+use crate::{readings::ODriveReadings, app_state::{UIState, StateParam}};
 use imgui::{Selectable, StyleColor, TableColumnSetup, TableFlags, Ui, Window};
 
-fn odrive_row(app_state: &mut AppState, ui: &Ui, odrv: &ODriveReadings) {
+fn odrive_row(app_state: &mut UIState, ui: &Ui, odrv: &ODriveReadings) {
     ui.table_set_column_index(0);
 
     let row_is_selected = Selectable::new(&odrv.can_id.to_string())
@@ -22,7 +22,8 @@ fn odrive_row(app_state: &mut AppState, ui: &Ui, odrv: &ODriveReadings) {
     ui.table_next_row();
 }
 
-pub fn odrive_overview(state: &mut AppState, ui: &Ui) {
+pub fn odrive_overview(state: &mut StateParam, ui: &Ui) {
+
     Window::new("Live Stats")
         .size([0f32, 200f32], imgui::Condition::FirstUseEver)
         .build(ui, || {
@@ -43,14 +44,14 @@ pub fn odrive_overview(state: &mut AppState, ui: &Ui) {
                 TableFlags::ROW_BG | TableFlags::BORDERS_OUTER | TableFlags::NO_BORDERS_IN_BODY,
             ) {
                 ui.table_next_row();
-                for odrv in state.odrive_data.clone().iter() {
-                    odrive_row(state, ui, odrv);
+                for odrv in state.app.odrive_data.clone().iter() {
+                    odrive_row(&mut state.ui, ui, odrv);
                 }
             }
 
             let button_color = ui.push_style_color(StyleColor::Button, [255f32, 0f32, 0f32, 1f32]);
             if ui.button("Charts") {
-                state.toggle_ctrl_panel();
+                state.ui.toggle_ctrl_panel();
             }
             button_color.pop();
         });

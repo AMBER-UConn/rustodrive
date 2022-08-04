@@ -1,11 +1,42 @@
-use std::collections::{HashMap};
+use std::{collections::HashMap, cell::{Cell}};
 
 use rustodrive::{axis::AxisID, state::ODriveAxisState};
 
 use crate::readings::ODriveReadings;
-pub struct AppState {
+
+
+pub struct StateParam {
+    pub ui: UIState,
+    pub app: AppState
+}
+
+pub struct UIState {
     pub control_panel: bool,
     pub odrive_details: HashMap<AxisID, bool>,
+    pub all_odrive_state: ODriveAxisState,
+}
+
+impl UIState {
+    pub fn new() -> Self {
+        Self {
+            control_panel: false,
+            odrive_details: HashMap::new(),
+            all_odrive_state: ODriveAxisState::Idle
+        }
+    }
+
+    pub fn toggle_ctrl_panel(&mut self) {
+        // let is_displayed = self.control_panel.get();
+        // self.control_panel.replace(!is_displayed);
+        self.control_panel = !self.control_panel;
+    }
+
+    pub fn detail_view(&mut self, odrive: &AxisID) {
+        self.odrive_details.insert(*odrive, true);
+    }
+}
+
+pub struct AppState {
     pub odrive_data: Vec<ODriveReadings>,
 }
 
@@ -28,17 +59,10 @@ impl AppState {
         }
 
         Self {
-            control_panel: false,
-            odrive_details: HashMap::new(),
             odrive_data: fake_odrive_data,
         }
     }
-
-    pub fn toggle_ctrl_panel(&mut self) {
-        self.control_panel = !self.control_panel;
-    }
-
-    pub fn detail_view(&mut self, odrive: &AxisID) {
-        self.odrive_details.insert(*odrive, true);
+    pub fn set_all_states(&mut self, odrive_state: &ODriveAxisState) {
+        println!("{}", odrive_state.to_string());
     }
 }
