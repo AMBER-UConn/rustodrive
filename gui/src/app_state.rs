@@ -16,6 +16,10 @@ pub struct UIState {
     pub odrives_state: ODriveAxisState,
     pub odrives_control_mode: ControlMode,
     pub odrives_input_mode: InputMode,
+    pub odrives_velocity: f32,
+    pub odrives_position: f32,
+    pub odrives_torque: f32,
+    pub odrives_voltage: f32
 }
 
 impl UIState {
@@ -26,6 +30,10 @@ impl UIState {
             odrives_state: ODriveAxisState::Idle,
             odrives_control_mode: ControlMode::VelocityControl,
             odrives_input_mode: InputMode::Inactive,
+            odrives_velocity: 0.0,
+            odrives_position: 0.0,
+            odrives_torque: 0.0,
+            odrives_voltage: 0.0,
         }
     }
 
@@ -42,6 +50,7 @@ impl UIState {
 
 pub struct AppState {
     pub odrive_data: Vec<ODriveReadings>,
+    pub battery: f32,
 }
 
 impl AppState {
@@ -64,6 +73,7 @@ impl AppState {
 
         Self {
             odrive_data: fake_odrive_data,
+            battery: 0.2
         }
     }
     pub fn set_all_states(&mut self, odrive_state: &ODriveAxisState) {
