@@ -94,6 +94,7 @@ impl fmt::Display for ODriveAxisState {
 
 //https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html#ODrive.Controller.ControlMode
 back_to_enum!{
+    #[derive(Debug, EnumIter, EnumString)]
     pub enum ControlMode {
         VoltageControl = 0x0,
         TorqueControl = 0x1,
@@ -102,7 +103,14 @@ back_to_enum!{
     }
 }
 
+impl fmt::Display for ControlMode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 back_to_enum!{
+    #[derive(Debug, EnumIter, EnumString)]
     pub enum InputMode {
         Inactive = 0x0,
         Passthrough = 0x1,
@@ -113,5 +121,11 @@ back_to_enum!{
         TorqueRamp = 0x6,
         Mirror = 0x7,
         Tuning = 0x8,
+    }
+}
+
+impl fmt::Display for InputMode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

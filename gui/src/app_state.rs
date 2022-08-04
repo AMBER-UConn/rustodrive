@@ -1,6 +1,6 @@
-use std::{collections::HashMap, cell::{Cell}};
+use std::{collections::HashMap};
 
-use rustodrive::{axis::AxisID, state::ODriveAxisState};
+use rustodrive::{axis::AxisID, state::{ODriveAxisState, ControlMode, InputMode}};
 
 use crate::readings::ODriveReadings;
 
@@ -13,7 +13,9 @@ pub struct StateParam {
 pub struct UIState {
     pub control_panel: bool,
     pub odrive_details: HashMap<AxisID, bool>,
-    pub all_odrive_state: ODriveAxisState,
+    pub odrives_state: ODriveAxisState,
+    pub odrives_control_mode: ControlMode,
+    pub odrives_input_mode: InputMode,
 }
 
 impl UIState {
@@ -21,7 +23,9 @@ impl UIState {
         Self {
             control_panel: false,
             odrive_details: HashMap::new(),
-            all_odrive_state: ODriveAxisState::Idle
+            odrives_state: ODriveAxisState::Idle,
+            odrives_control_mode: ControlMode::VelocityControl,
+            odrives_input_mode: InputMode::Inactive,
         }
     }
 
@@ -64,5 +68,13 @@ impl AppState {
     }
     pub fn set_all_states(&mut self, odrive_state: &ODriveAxisState) {
         println!("{}", odrive_state.to_string());
+    }
+
+    pub fn set_control_mode(&mut self, control_mode: &ControlMode) {
+        println!("{}", control_mode.to_string());
+    }
+
+    pub fn set_input_mode(&mut self, input_mode: &InputMode) {
+        println!("{}", input_mode.to_string());
     }
 }

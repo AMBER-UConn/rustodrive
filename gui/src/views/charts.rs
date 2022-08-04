@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
 use imgui::{Ui, Window, StyleColor, Selectable};
-use rustodrive::state::ODriveAxisState;
+use rustodrive::state::{ODriveAxisState, ControlMode, InputMode};
 use strum::IntoEnumIterator;
 use crate::app_state::{AppState, StateParam, UIState};
 
@@ -35,33 +35,31 @@ pub fn plots(ui: &Ui) {
     line_color.pop();
 }
 
-pub fn state_selector(selected: &mut ODriveAxisState, app: &mut AppState, ui: &Ui) {
-
-    if let Some(listbox) = ui.begin_combo("Axes States", selected.to_string()) {
+pub fn dropdown<T: std::fmt::Display + IntoEnumIterator>(ui: &Ui, label: &str, selected: &mut T) {
+    if let Some(listbox) = ui.begin_combo(label, selected.to_string()) {
         
-        for odrive_state in ODriveAxisState::iter() {
-            if Selectable::new(odrive_state.to_string()).build(ui) {
-                *selected = odrive_state;
+        for mode in T::iter() {
+            if Selectable::new(mode.to_string()).build(ui) {
+                *selected = mode;
             }
         }
         listbox.end()
     } 
-    if ui.button("Set state") {
-        app.set_all_states(&selected);
-    }
 }
 
-
-
 pub fn control_panel(state: &mut StateParam, ui: &Ui) {
-    let all_odrive_state = &mut state.ui.all_odrive_state;
-    let app_state = &mut state.app;
-
     if state.ui.control_panel {
-        Window::new("charts").opened(&mut state.ui.control_panel).build(ui, || {
+        Window::new("charts").build(ui, || {
             plots(ui);
-            state_selector(all_odrive_state, app_state, ui);
-        });
+            dropdown(ui, "ODrive State", &mut state.ui.odrives_state);
+            dropdown(ui, "Control Mode", &mut state.ui.odrives_control_mode);
+            dropdown(ui, "Input Mode", &mut state.ui.odrives_input_mode);
 
+            if ui.button("Apply changes") {
+                state.app.set_all_states(&state.ui.odrives_state);
+                state.app.set_control_mode(&state.ui.odrives_control_mode);
+                state.app.set_input_mode(&state.ui.odrives_input_mode);
+            }
+        });
     }
 }
