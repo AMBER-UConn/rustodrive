@@ -9,7 +9,7 @@ use crate::{
         ReadComm::*,
         WriteComm::*,
     },
-    utils::{combine_data, float_to_data},
+    utils::*,
 };
 
 pub type AxisID = usize;
@@ -81,13 +81,23 @@ impl<'a> Encoder<'a> {
             [0; 8],
         )
     }
-    fn get_estimate(&self) -> CANRequest {
+    fn get_estimate(&self) -> (f32, f32) {
+        let tk = 
         ticket(
             *self.id,
             Read(GetEncoderEstimates),
             [0; 8],
+        );
+        let (pos_est_bin, vel_est_bin) = split_data(tk.data);
+        
+        return (
+            data_to_float(pos_est_bin),
+            data_to_float(vel_est_bin),
         )
     }
+    fn get_pos_estimate(&self) -> f32 {self.get_estimate().0}
+    fn get_vel_estimate(&self) -> f32 {self.get_estimate().1}
+
     fn set_linear_count() {
         unimplemented!()
     }

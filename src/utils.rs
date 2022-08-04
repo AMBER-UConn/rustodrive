@@ -2,7 +2,7 @@ pub fn float_to_data(fl: f32) -> [u8; 4] {
     return fl.to_le_bytes();
 }
 
-pub fn data_to_float(mut data: [u8; 4]) -> f32 {
+pub fn data_to_float(data: [u8; 4]) -> f32 {
     return f32::from_le_bytes(data);
 }
 
