@@ -1,7 +1,6 @@
 use std::f32::consts::PI;
 
 use imgui::{Ui, Window, StyleColor, Selectable};
-use rustodrive::state::{ODriveAxisState, ControlMode, InputMode};
 use strum::IntoEnumIterator;
 use crate::app_state::{AppState, StateParam, UIState};
 
@@ -49,8 +48,9 @@ pub fn dropdown<T: std::fmt::Display + IntoEnumIterator>(ui: &Ui, label: &str, s
 
 pub fn control_panel(state: &mut StateParam, ui: &Ui) {
     if state.ui.control_panel {
-        Window::new("charts").build(ui, || {
+        Window::new("charts").opened(&mut state.ui.control_panel).build(ui, || {
             plots(ui);
+
             dropdown(ui, "ODrive State", &mut state.ui.odrives_state);
             dropdown(ui, "Control Mode", &mut state.ui.odrives_control_mode);
             dropdown(ui, "Input Mode", &mut state.ui.odrives_input_mode);
