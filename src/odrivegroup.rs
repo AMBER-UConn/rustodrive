@@ -2,9 +2,10 @@ use std::collections::BTreeMap;
 
 use crate::{
     axis::{Axis, AxisID},
-    canframe::{CANRequest},
+    canframe::{CANRequest, ticket},
     response::ODriveResponse,
     threads::ReadWriteCANThread,
+    state::{ODriveCommand::Write, WriteComm::*},
 };
 
 /// `ODriveGroup` is an interface for communicating with the odrive,
@@ -150,6 +151,14 @@ impl<'a> ODriveGroup<'a> {
             None => panic!("Cannot retrieve axis {} that doesn't exist!", id),
         }
     }
+
+    pub fn reboot(&self) -> () {
+        ticket(**self.axes.iter().next().unwrap().0,
+               Write(RebootODrive),
+               [0; 8]
+        );
+    }
+
 }
 
 #[cfg(test)]
