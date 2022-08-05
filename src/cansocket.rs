@@ -1,7 +1,9 @@
-
-use std::io;
-use socketcan::{CANSocketOpenError, CANFrame};
-use crate::{cfg_match, canframe::CANRequest, state::ODriveCommand};
+#[allow(unused_imports)]
+use {std::io,
+    socketcan::{CANSocketOpenError, CANFrame},
+    crate::{canframe::CANRequest, state::ODriveCommand},
+};
+use crate::cfg_match;
 
 cfg_match! {
     feature = "mock-socket" => {
