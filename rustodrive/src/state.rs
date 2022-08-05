@@ -1,8 +1,8 @@
 use core::fmt;
 
-use strum::{EnumString, EnumIter, IntoEnumIterator};
+use crate::back_to_enum;
 use std::str::FromStr;
-use crate::{back_to_enum};
+use strum::{EnumIter, EnumString};
 
 back_to_enum! {
     #[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
@@ -24,7 +24,6 @@ back_to_enum! {
 //        ODriveCANFrame { axis, cmd: ODriveCommand::Read(cmd), data: [0; 8] }
 //    }
 //}
-
 
 back_to_enum! {
     #[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
@@ -56,7 +55,6 @@ back_to_enum! {
 //        ODriveCANFrame { axis, cmd: ODriveCommand::Write(cmd), data }
 //    }
 //}
-
 
 /// Documentation: <https://docs.odriverobotics.com/v/latest/can-protocol.html#messages>
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
@@ -91,10 +89,9 @@ impl fmt::Display for ODriveAxisState {
     }
 }
 
-
 //https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html#ODrive.Controller.ControlMode
-back_to_enum!{
-    #[derive(Debug, EnumIter, EnumString)]
+back_to_enum! {
+    #[derive(Clone, PartialEq, Copy, Debug, EnumIter, EnumString)]
     pub enum ControlMode {
         VoltageControl = 0x0,
         TorqueControl = 0x1,
@@ -109,8 +106,8 @@ impl fmt::Display for ControlMode {
     }
 }
 
-back_to_enum!{
-    #[derive(Debug, EnumIter, EnumString)]
+back_to_enum! {
+    #[derive(Clone, Copy, Debug, EnumIter, EnumString)]
     pub enum InputMode {
         Inactive = 0x0,
         Passthrough = 0x1,

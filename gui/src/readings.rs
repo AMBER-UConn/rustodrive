@@ -1,10 +1,11 @@
-use rustodrive::state::ODriveAxisState;
+use rustodrive::state::{ODriveAxisState, InputMode, ControlMode};
 
 #[derive(Clone)]
 pub struct ODriveReadings {
-    pub can_id: usize,
+    pub id: usize,
     pub current_state: ODriveAxisState,
-    // controller_status: ControllerStatus,
+    pub input_mode: InputMode,
+    pub control_mode: ControlMode,
     // axis_error: AxisError
     // motor_error: MotorError,
     pub position_estimate: f32,
@@ -20,7 +21,7 @@ pub struct ODriveReadings {
 impl ODriveReadings {
     pub fn as_columns(&self) -> [String; 10] {
         [
-            self.can_id.to_string(),
+            self.id.to_string(),
             self.current_state.to_string(),
             self.position_estimate.to_string(),
             self.velocity_estimate.to_string(),
