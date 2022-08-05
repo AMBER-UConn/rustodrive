@@ -5,7 +5,7 @@ use rustodrive::{
     state::{ControlMode, InputMode, ODriveAxisState},
 };
 
-use crate::{readings::ODriveReadings, views::{control_panel::ControlPanel, detail::{ODriveUIState, ODriveDetail}}};
+use crate::{readings::{ODriveReadings, PlottableData::*}, views::{control_panel::ControlPanel, detail::{ODriveDetailState, ODriveDetail}}};
 
 pub struct StateParam {
     pub ui: UIState,
@@ -19,8 +19,17 @@ pub struct UIState {
 
 impl UIState {
     pub fn new() -> Self {
+        let control_panel_state = ODriveDetailState {
+            plottable_values: HashMap::from([
+                (MotorTemp, false),
+                (InverterTemp, false),
+                (BusVoltage, true),
+                (BusCurrent, true),
+            ]),
+            ..Default::default()
+        };
         Self {
-            control_panel: ControlPanel { open: true, odrives: ODriveUIState::default()},
+            control_panel: ControlPanel { open: true, odrives: control_panel_state},
             details: HashMap::new(),
         }
     }
@@ -33,11 +42,12 @@ impl UIState {
             ControlMode::PositionControl => odrive.position_estimate,
         };
 
-        let odrive_ui_state = ODriveUIState {
+        let odrive_ui_state = ODriveDetailState {
             axis_state: odrive.current_state,
             control_mode: odrive.control_mode,
             input_mode: odrive.input_mode,
             control_mode_val: control_mode_val,
+            ..Default::default()
         };
 
         self.details.insert(odrive.id, ODriveDetail { open: true, odrive: odrive_ui_state });
@@ -88,5 +98,9 @@ impl AppState {
 
     pub fn set_control_val(&mut self, val: &f32) {
         println!("{}", val.to_string());
+    }
+
+    pub fn map(&self, map_func: fn(&ODriveReadings) -> f32) -> Vec<f32> {
+        self.odrive_data.iter().map(map_func).collect::<Vec<f32>>()
     }
 }

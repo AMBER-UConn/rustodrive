@@ -1,31 +1,44 @@
+use std::{f32::consts::PI, collections::HashMap};
+
 use imgui::{InputFloat, Slider, Ui, Window};
 use rustodrive::state::{ControlMode, InputMode, ODriveAxisState};
 
-use crate::app_state::AppState;
+use crate::{app_state::AppState, readings::{PlottableData::{self, *}}};
 
-use super::control_panel::{dropdown, plots};
+use super::shared::{dropdown, plot_selectors};
 
-pub struct ODriveUIState {
+pub struct ODriveDetailState {
     pub axis_state: ODriveAxisState,
     pub control_mode: ControlMode,
     pub input_mode: InputMode,
     pub control_mode_val: f32,
+    pub plottable_values: HashMap<PlottableData, bool>
 }
 
-impl Default for ODriveUIState {
+impl Default for ODriveDetailState {
     fn default() -> Self {
         Self {
             axis_state: ODriveAxisState::Idle,
             control_mode: ControlMode::VelocityControl,
             input_mode: InputMode::Inactive,
             control_mode_val: 0.0,
+            plottable_values: HashMap::from([
+                (PosEstimate, false),
+                (VelEstimate, false),
+                (ShadowCount, false),
+                (EncoderCount, false),
+                (MotorTemp, false),
+                (InverterTemp, false),
+                (BusVoltage, true),
+                (BusCurrent, true),
+            ]),
         }
     }
 }
 
 pub struct ODriveDetail {
     pub open: bool,
-    pub odrive: ODriveUIState,
+    pub odrive: ODriveDetailState,
 }
 
 pub fn detail(app_state: &mut AppState, odrive_id: &usize, odrive_detail: &mut ODriveDetail, ui: &Ui) {
@@ -36,7 +49,18 @@ pub fn detail(app_state: &mut AppState, odrive_id: &usize, odrive_detail: &mut O
             .size([400.0, 800.0], imgui::Condition::Always)
             .opened(&mut odrive_detail.open)
             .build(ui, || {
-                plots(ui);
+                ui.text("Plots");
+
+                plot_selectors(ui, &mut odrive_detail.odrive.plottable_values, &[
+                    (BusVoltage, "Voltage [V]", &app_state.map(|odrv| odrv.bus_voltage)),
+                    (BusCurrent, "Current [I]", &app_state.map(|odrv| odrv.bus_current)),
+                    (PosEstimate, "Position Estimate", &app_state.map(|odrv| odrv.position_estimate)),
+                    (VelEstimate, "Velocity Estimate", &app_state.map(|odrv| odrv.velocity_estimate)),
+                    (ShadowCount, "Shadow Count", &app_state.map(|odrv| odrv.shadow_count as f32)),
+                    (EncoderCount, "Encoder Count", &app_state.map(|odrv| odrv.encoder_count as f32)),
+                    (MotorTemp, "Motor Temperature °C", &app_state.map(|odrv| odrv.motor_temp)),
+                    (InverterTemp, "Inverter Temperature °C", &app_state.map(|odrv| odrv.inverter_temp)),
+                ]);
 
                 let odrive_ui = &mut odrive_detail.odrive;
 

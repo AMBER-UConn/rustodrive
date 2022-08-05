@@ -34,3 +34,15 @@ impl ODriveReadings {
         ]
     }
 }
+
+#[derive(PartialEq, Eq, Hash)]
+pub enum PlottableData {
+    PosEstimate,
+    VelEstimate,
+    ShadowCount,
+    EncoderCount,
+    MotorTemp,
+    InverterTemp,
+    BusVoltage,
+    BusCurrent
+}
