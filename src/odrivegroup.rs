@@ -152,8 +152,10 @@ impl<'a> ODriveGroup<'a> {
         }
     }
 
+    fn first_axis_id(&self) -> usize {**self.axes.iter().next().unwrap().0}
+
     pub fn reboot(&self) -> () {
-        ticket(**self.axes.iter().next().unwrap().0,
+        ticket(self.first_axis_id(),
                Write(RebootODrive),
                [0; 8]
         );
