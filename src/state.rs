@@ -1,6 +1,6 @@
 use crate::{back_to_enum};
 
-back_to_enum! {
+back_to_enum! { u32,
     #[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
     pub enum ReadComm {
         Heartbeat = 0x001,
@@ -15,14 +15,7 @@ back_to_enum! {
     }
 }
 
-//impl ReadComm {
-//    pub fn to_msg(axis: u32, cmd: Self) -> ODriveCANFrame {
-//        ODriveCANFrame { axis, cmd: ODriveCommand::Read(cmd), data: [0; 8] }
-//    }
-//}
-
-
-back_to_enum! {
+back_to_enum! { u32,
     #[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
     pub enum WriteComm {
         EStop = 0x002,
@@ -47,12 +40,6 @@ back_to_enum! {
     }
 }
 
-//impl WriteComm {
-//    pub fn to_msg(axis: u32, cmd: Self, data: [u8; 8]) -> ODriveCANFrame {
-//        ODriveCANFrame { axis, cmd: ODriveCommand::Write(cmd), data }
-//    }
-//}
-
 
 /// Documentation: <https://docs.odriverobotics.com/v/latest/can-protocol.html#messages>
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
@@ -61,9 +48,9 @@ pub enum ODriveCommand {
     Write(WriteComm),
 }
 
-back_to_enum! {
+back_to_enum! { u8,
     /// Documentation: <https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html?highlight=axisstate#ODrive.Axis.AxisState>
-    pub enum ODriveAxisState {
+    pub enum AxisState {
         Undefined = 0x0,
         Idle = 0x1,
         StartupSequence = 0x2,
@@ -80,9 +67,8 @@ back_to_enum! {
     }
 }
 
-
 //https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html#ODrive.Controller.ControlMode
-back_to_enum!{
+back_to_enum!{ i32,
     pub enum ControlMode {
         VoltageControl = 0x0,
         TorqueControl = 0x1,
@@ -91,7 +77,7 @@ back_to_enum!{
     }
 }
 
-back_to_enum!{
+back_to_enum!{ i32, 
     pub enum InputMode {
         Inactive = 0x0,
         Passthrough = 0x1,
