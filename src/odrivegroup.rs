@@ -2,10 +2,10 @@ use std::collections::BTreeMap;
 
 use crate::{
     axis::{Axis, AxisID},
-    canframe::{CANRequest, ticket},
-    response::{ODriveResponse, ErrorResponse, ODriveError, ResponseType},
+    canframe::{CANRequest, ticket, ODriveCANFrame, CANResponse},
+    response::{ErrorResponse, ResponseType},
     threads::ReadWriteCANThread,
-    state::{ODriveCommand::Write, WriteComm::*}, casts,
+    state::{ODriveCommand::{Write}, WriteComm::*}
 };
 
 /// `ODriveGroup` is an interface for communicating with the odrive,
@@ -101,12 +101,38 @@ impl<'a> ODriveGroup<'a> {
     /// std::thread::sleep(Duration::from_secs(1));
     /// stop();
     /// ```
-    pub fn all_axes<F>(&self, mut f: F) -> Vec<ODriveResponse>
+    pub fn all_axes<F, T: From<CANResponse>>(&self, mut f: F) -> Vec<Result<T, ErrorResponse>>
     where
         F: FnMut(&Axis) -> CANRequest,
     {
         let requests = self.axes.values().map(|ax| f(ax)).collect();
-        self.can.request_many(requests)
+        let responses = self.can.request_many(requests);
+
+        let mut final_responses: Vec<Result<T, ErrorResponse>> = vec![];
+        for res in responses {
+            // For each received response, either add the error to the responses or
+            // convert the response to the appropriate type
+
+            let resp_type = match res {
+                Ok(resp) => resp,
+                Err(err) => {
+                    final_responses.push(Err(err));
+                    continue;
+                },
+            };
+
+            // Convert the response to the type
+            let res = match resp_type {
+                ResponseType::Body { request: _, response } => Ok(response.into()),
+    
+                // We use the request to check if the command sent is a Read request. If it is, it panics. Otherwise it returns ()
+                ResponseType::Bodyless { req } => Ok(req.into()),
+            };
+
+            final_responses.push(res);
+        }
+
+        final_responses
     }
 
     /// This method sends the request specified by the closure to the axis specified.
@@ -138,7 +164,7 @@ impl<'a> ODriveGroup<'a> {
     /// std::thread::sleep(Duration::from_secs(1));
     /// stop();
     /// ```
-    pub fn axis<F, T: From<casts::Arr>>(&self, axis_id: &AxisID, f: F) -> Result<T, ErrorResponse>
+    pub fn axis<F, T: From<ODriveCANFrame>>(&self, axis_id: &AxisID, f: F) -> Result<T, ErrorResponse>
     where
         F: FnOnce(&Axis) -> CANRequest,
     {
@@ -146,7 +172,13 @@ impl<'a> ODriveGroup<'a> {
             Ok(resp) => resp,
             Err(err) => return Err(err),
         };
-        Ok(casts::Arr(resp_type.body().1.data).try_into().expect("Response received. Failed to cast to type"))
+        
+        return match resp_type {
+            ResponseType::Body { request: _, response } => Ok(response.into()),
+
+            // We use the request to check if the command sent is a Read request. If it is, it panics. Otherwise it returns ()
+            ResponseType::Bodyless { req } => Ok(req.into()),
+        }
     }
 
     fn get_axis(&self, id: &AxisID) -> &Axis {
@@ -172,7 +204,7 @@ mod tests {
     use std::sync::mpsc::channel;
 
     use crate::canproxy::CANProxy;
-    use crate::state::{ODriveAxisState::*, ODriveCommand, WriteComm};
+    use crate::state::{AxisState::*, ODriveCommand, WriteComm};
     use crate::canframe::CANRequest;
     use crate::response::ResponseType;
     use crate::tests::wait_for_msgs;
@@ -224,7 +256,7 @@ mod tests {
         proxy.register_rw("thread 1", move |can_rw| {
             let odrives = ODriveGroup::new(can_rw, &[0, 1, 2, 3, 4, 5]);
 
-            let responses = odrives.all_axes(|ax| ax.set_state(FullCalibrationSequence));
+            let responses: () = odrives.all_axes(|ax| ax.set_state(FullCalibrationSequence)).unwrap_all();
             send.send(responses).unwrap();
         });
         let stop_all = proxy.begin();
