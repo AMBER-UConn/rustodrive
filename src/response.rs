@@ -1,6 +1,4 @@
-use std::fmt;
-
-use crate::canframe::{CANRequest, CANResponse};
+use crate::{canframe::{CANRequest, CANResponse, ODriveCANFrame}, axis::AxisID};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct ErrorResponse {
@@ -11,11 +9,19 @@ pub struct ErrorResponse {
 #[derive(Clone, Debug, PartialEq)]
 pub enum ODriveError {
     FailedToSend,
-    ImproperCast(String),
     NoResponse,
+    ConvertedBadData
 }
 
 pub type ODriveResponse = Result<ResponseType, ErrorResponse>;
+
+#[derive(Debug)]
+pub struct Success<T: TryFrom<ODriveCANFrame>> {
+    pub axis: AxisID,
+    pub sent_request: CANRequest,
+    pub data: T
+}
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ResponseType {
@@ -38,33 +44,5 @@ impl ResponseType {
             ResponseType::Body { request: req, response: _resp} => req,
             ResponseType::Bodyless { req} => req,
         }
-    }
-}
-
-pub trait ResultAll<T, E> {
-    fn unwrap_all(self) -> Vec<T>;
-    fn expect_all(self, msg: String) -> Vec<T>;
-}
-
-impl<T, E> ResultAll<T, E> for Vec<Result<T, E>> where E: fmt::Debug{
-    /// This method calls `.unwrap()` on all responses.
-    /// This will panic if a single response is an error
-    fn unwrap_all(self) -> Vec<T> {
-        let mut frames = Vec::new();
-
-        for response in self.into_iter() {
-            frames.push(response.unwrap());
-        }
-        frames
-    }
-
-
-    fn expect_all(self, msg: String) -> Vec<T> {
-        let mut frames = Vec::new();
-
-        for response in self.into_iter() {
-            frames.push(response.expect(&msg));
-        }
-        frames
     }
 }

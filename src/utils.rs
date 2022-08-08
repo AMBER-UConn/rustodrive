@@ -1,3 +1,5 @@
+use std::fmt;
+
 
 pub struct ResponseManip {}
 impl ResponseManip {
@@ -20,7 +22,7 @@ impl ResponseManip {
         return output;
     }
  */
-    pub fn combine<'a>(data1: &[u8], data2: &[u8], dest: &'a mut [u8]) ->&'a [u8] {
+    fn combine<'a>(data1: &[u8], data2: &[u8], dest: &'a mut [u8]) ->&'a [u8] {
         
         let (left, right) = dest.split_at_mut(data1.len());
     
@@ -86,3 +88,33 @@ impl ResponseManip {
     }
 
 }
+
+
+pub trait ResultAll<T, E> {
+    fn unwrap_all(self) -> Vec<T>;
+    fn expect_all(self, msg: String) -> Vec<T>;
+}
+
+impl<T, E> ResultAll<T, E> for Vec<Result<T, E>> where E: fmt::Debug{
+    /// This method calls `.unwrap()` on all responses.
+    /// This will panic if a single response is an error
+    fn unwrap_all(self) -> Vec<T> {
+        let mut frames = Vec::new();
+
+        for response in self.into_iter() {
+            frames.push(response.unwrap());
+        }
+        frames
+    }
+
+
+    fn expect_all(self, msg: String) -> Vec<T> {
+        let mut frames = Vec::new();
+
+        for response in self.into_iter() {
+            frames.push(response.expect(&msg));
+        }
+        frames
+    }
+}
+
