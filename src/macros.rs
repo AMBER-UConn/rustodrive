@@ -3,7 +3,7 @@
 /// <https://stackoverflow.com/a/57578431/10521417>
 #[macro_export]
 macro_rules! back_to_enum {
-    ($(#[$meta:meta])* $vis:vis enum $name:ident {
+    ($enum_type:ty, $(#[$meta:meta])* $vis:vis enum $name:ident {
         $($(#[$vmeta:meta])* $vname:ident $(= $val:expr)?,)*
     }) => {
         $(#[$meta])*
@@ -11,12 +11,12 @@ macro_rules! back_to_enum {
             $($(#[$vmeta])* $vname $(= $val)?,)*
         }
 
-        impl std::convert::TryFrom<u32> for $name {
+        impl std::convert::TryFrom<$enum_type> for $name {
             type Error = ();
 
-            fn try_from(v: u32) -> Result<Self, Self::Error> {
+            fn try_from(v: $enum_type) -> Result<Self, Self::Error> {
                 match v {
-                    $(x if x == $name::$vname as u32 => Ok($name::$vname),)*
+                    $(x if x == $name::$vname as $enum_type => Ok($name::$vname),)*
                     _ => Err(()),
                 }
             }
