@@ -41,3 +41,24 @@ macro_rules! cfg_match {
         )?)?
     );
 } 
+
+
+
+#[cfg(test)]
+mod tests {
+    use crate::{back_to_enum};
+
+    back_to_enum! { u32, 
+        pub enum TestEnum {
+            A = 0x1, 
+            B = 0x2, 
+            C = 0x3, 
+            D = 0x4,
+        }
+    }
+
+    #[test]
+    fn test_bad_data_conversion() {
+        assert!(TryInto::<TestEnum>::try_into(10).is_err());
+    }
+}

@@ -1,4 +1,3 @@
-use crate::response::ODriveError;
 use crate::state::{self, ReadComm};
 use crate::state::ODriveCommand;
 use socketcan::CANFrame;

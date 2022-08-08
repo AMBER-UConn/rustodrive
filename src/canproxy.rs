@@ -459,7 +459,7 @@ mod tests {
 
     use crate::{
         state::{ODriveCommand, ReadComm, WriteComm},
-        canframe::{CANRequest}, tests::wait_for_msgs, response::{ManyResponses, ResponseType},
+        canframe::{CANRequest}, tests::wait_for_msgs, response::{ResponseType}, utils::ResultAll,
     };
 
     use super::CANProxy;

@@ -2,6 +2,7 @@ use crate::back_to_enum;
 
 // See documentation: https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html?highlight=error#ODrive.Error
 back_to_enum! { u32,
+    #[derive(Debug, PartialEq)]
     pub enum AxisError { 
         Initializing = 0x1,
         SystemLevel = 0x2,
@@ -27,6 +28,7 @@ back_to_enum! { u32,
 
 
 back_to_enum! { u64,
+    #[derive(Debug, PartialEq)]
     pub enum MotorError {
         PhaseResistanceOFR = 0x1,
         PhaseInductanceOFR = 0x2,
@@ -59,6 +61,7 @@ back_to_enum! { u64,
 }
 
 back_to_enum! { u32,
+    #[derive(Debug, PartialEq)]
     pub enum EncoderError {
         UnstableGain = 0x1,
         CPRPolepairsMismatch = 0x2,
@@ -74,6 +77,7 @@ back_to_enum! { u32,
 }
 
 back_to_enum! { u32,
+    #[derive(Debug, PartialEq)]
     pub enum SensorlessError {
         UnstableGain = 0x1,
         UnknownCurrentMeasurement = 0x2,
