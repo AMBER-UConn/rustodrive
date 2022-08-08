@@ -9,7 +9,7 @@ back_to_enum! { u32,
         SensorlessError = 0x005,
         GetEncoderEstimates = 0x009,
         GetEncoderCount = 0x00A,
-        GetIQSetpoint = 0x014,
+        GetIQ = 0x014,
         GetTemperature = 0x015,
         GetVBusVoltage = 0x017,
     }
@@ -50,6 +50,7 @@ pub enum ODriveCommand {
 
 back_to_enum! { u8,
     /// Documentation: <https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html?highlight=axisstate#ODrive.Axis.AxisState>
+    #[derive(Debug, PartialEq)]
     pub enum AxisState {
         Undefined = 0x0,
         Idle = 0x1,
@@ -69,6 +70,7 @@ back_to_enum! { u8,
 
 //https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html#ODrive.Controller.ControlMode
 back_to_enum!{ i32,
+    #[derive(Debug, PartialEq)]
     pub enum ControlMode {
         VoltageControl = 0x0,
         TorqueControl = 0x1,
@@ -78,6 +80,7 @@ back_to_enum!{ i32,
 }
 
 back_to_enum!{ i32, 
+    #[derive(Debug, PartialEq)]
     pub enum InputMode {
         Inactive = 0x0,
         Passthrough = 0x1,
@@ -90,4 +93,3 @@ back_to_enum!{ i32,
         Tuning = 0x8,
     }
 }
-
