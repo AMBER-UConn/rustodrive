@@ -1,3 +1,4 @@
+use crate::response::ODriveError;
 use crate::state::{self, ReadComm};
 use crate::state::ODriveCommand;
 use socketcan::CANFrame;
@@ -13,6 +14,8 @@ pub fn ticket(id: usize, command: ODriveCommand, data: [u8; 8]) -> CANRequest {
 pub fn read_can(id: usize, command: ReadComm) -> CANRequest {
     ticket(id, ODriveCommand::Read(command), [0; 8])
 }
+
+
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct ODriveCANFrame {

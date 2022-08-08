@@ -20,7 +20,7 @@ impl ResponseManip {
         return output;
     }
  */
-    fn combine<'a>(data1: &[u8], data2: &[u8], dest: &'a mut [u8]) ->&'a [u8] {
+    pub fn combine<'a>(data1: &[u8], data2: &[u8], dest: &'a mut [u8]) ->&'a [u8] {
         
         let (left, right) = dest.split_at_mut(data1.len());
     
@@ -60,6 +60,7 @@ impl ResponseManip {
                 );
     }
 
+    
     pub fn split_32(data: [u8; 8]) -> ([u8; 4], [u8; 4]) {
         let (sp1, sp2) = ResponseManip::split(&data);
         (

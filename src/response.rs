@@ -8,7 +8,8 @@ pub struct ErrorResponse {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ODriveError {
-    FailedToSend
+    FailedToSend,
+    FailedToCast
 }
 
 pub type ODriveResponse = Result<ResponseType, ErrorResponse>;

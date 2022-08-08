@@ -3,9 +3,9 @@ use std::collections::BTreeMap;
 use crate::{
     axis::{Axis, AxisID},
     canframe::{CANRequest, ticket},
-    response::ODriveResponse,
+    response::{ODriveResponse, ErrorResponse, ODriveError, ResponseType},
     threads::ReadWriteCANThread,
-    state::{ODriveCommand::Write, WriteComm::*},
+    state::{ODriveCommand::Write, WriteComm::*}, casts,
 };
 
 /// `ODriveGroup` is an interface for communicating with the odrive,
@@ -138,11 +138,15 @@ impl<'a> ODriveGroup<'a> {
     /// std::thread::sleep(Duration::from_secs(1));
     /// stop();
     /// ```
-    pub fn axis<F>(&self, axis_id: &AxisID, f: F) -> ODriveResponse
+    pub fn axis<F, T: From<casts::Arr>>(&self, axis_id: &AxisID, f: F) -> Result<T, ErrorResponse>
     where
         F: FnOnce(&Axis) -> CANRequest,
     {
-        self.can.request(f(self.get_axis(axis_id)))
+        let resp_type = match self.can.request(f(self.get_axis(axis_id))) {
+            Ok(resp) => resp,
+            Err(err) => return Err(err),
+        };
+        Ok(casts::Arr(resp_type.body().1.data).try_into().expect("Response received. Failed to cast to type"))
     }
 
     fn get_axis(&self, id: &AxisID) -> &Axis {
@@ -190,7 +194,7 @@ mod tests {
         proxy.register_rw("thread 1", move |can_rw| {
             let odrives = ODriveGroup::new(can_rw, &[0, 1, 2, 3, 4, 5]);
 
-            let responses = odrives.axis(&1, |ax| ax.set_state(FullCalibrationSequence));
+            let responses = odrives.axis::<_, ()>(&1, |ax| ax.set_state(FullCalibrationSequence));
             send.send(responses).unwrap();
         });
         let stop_all = proxy.begin();
