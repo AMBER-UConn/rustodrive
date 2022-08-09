@@ -2,7 +2,7 @@
 name = "rustodrive"
 version = "0.1.0"
 edition = "2021"
-authors = ["Kalin <kalin.kochnev@uconn.edu>"]
+authors = ["Kalin <kalin.kochnev@uconn.edu>", "Rany <rany.kamel@uconn.edu>"]
 license = "MIT"
 keywords = ["odrive", "CAN"]
 categories = ["science::robotics", "api-bindings"]
@@ -15,7 +15,6 @@ mock-socket = []
 
 [dependencies]
 socketcan = "1.7.0" #for communication with the odrive
-rand = "0.8.5"
 
 strum_macros = "0.24"
 

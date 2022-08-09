@@ -14,6 +14,8 @@ pub fn read_can(id: usize, command: ReadComm) -> CANRequest {
     ticket(id, ODriveCommand::Read(command), [0; 8])
 }
 
+
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct ODriveCANFrame {
     pub axis: u32,

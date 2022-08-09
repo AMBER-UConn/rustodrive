@@ -4,7 +4,7 @@ use crate::back_to_enum;
 use std::str::FromStr;
 use strum::{EnumIter, EnumString};
 
-back_to_enum! {
+back_to_enum! { u32,
     #[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
     pub enum ReadComm {
         Heartbeat = 0x001,
@@ -13,19 +13,13 @@ back_to_enum! {
         SensorlessError = 0x005,
         GetEncoderEstimates = 0x009,
         GetEncoderCount = 0x00A,
-        GetIQSetpoint = 0x014,
-        GetSensorlessEstimates = 0x015,
+        GetIQ = 0x014,
+        GetTemperature = 0x015,
         GetVBusVoltage = 0x017,
     }
 }
 
-//impl ReadComm {
-//    pub fn to_msg(axis: u32, cmd: Self) -> ODriveCANFrame {
-//        ODriveCANFrame { axis, cmd: ODriveCommand::Read(cmd), data: [0; 8] }
-//    }
-//}
-
-back_to_enum! {
+back_to_enum! { u32,
     #[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
     pub enum WriteComm {
         EStop = 0x002,
@@ -50,11 +44,6 @@ back_to_enum! {
     }
 }
 
-//impl WriteComm {
-//    pub fn to_msg(axis: u32, cmd: Self, data: [u8; 8]) -> ODriveCANFrame {
-//        ODriveCANFrame { axis, cmd: ODriveCommand::Write(cmd), data }
-//    }
-//}
 
 /// Documentation: <https://docs.odriverobotics.com/v/latest/can-protocol.html#messages>
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
@@ -63,10 +52,10 @@ pub enum ODriveCommand {
     Write(WriteComm),
 }
 
-back_to_enum! {
+back_to_enum! { u8,
     /// Documentation: <https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html?highlight=axisstate#ODrive.Axis.AxisState>
-    #[derive(Debug, Copy, Clone, PartialEq, PartialOrd, EnumIter, EnumString)]
-    pub enum ODriveAxisState {
+    #[derive(Debug, PartialEq)]
+    pub enum AxisState {
         Undefined = 0x0,
         Idle = 0x1,
         StartupSequence = 0x2,
@@ -83,15 +72,9 @@ back_to_enum! {
     }
 }
 
-impl fmt::Display for ODriveAxisState {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
 //https://docs.odriverobotics.com/v/latest/fibre_types/com_odriverobotics_ODrive.html#ODrive.Controller.ControlMode
-back_to_enum! {
-    #[derive(Clone, PartialEq, Copy, Debug, EnumIter, EnumString)]
+back_to_enum!{ i32,
+    #[derive(Debug, PartialEq)]
     pub enum ControlMode {
         VoltageControl = 0x0,
         TorqueControl = 0x1,
@@ -100,14 +83,8 @@ back_to_enum! {
     }
 }
 
-impl fmt::Display for ControlMode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-back_to_enum! {
-    #[derive(Clone, Copy, Debug, EnumIter, EnumString)]
+back_to_enum!{ i32, 
+    #[derive(Debug, PartialEq)]
     pub enum InputMode {
         Inactive = 0x0,
         Passthrough = 0x1,
@@ -118,11 +95,5 @@ back_to_enum! {
         TorqueRamp = 0x6,
         Mirror = 0x7,
         Tuning = 0x8,
-    }
-}
-
-impl fmt::Display for InputMode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
     }
 }

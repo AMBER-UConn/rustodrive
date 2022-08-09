@@ -8,6 +8,8 @@ pub mod threads;
 pub mod axis;
 pub mod response;
 pub mod utils;
+pub mod casts;
+pub mod error;
 
 #[cfg(test)]
 pub(crate) mod tests {

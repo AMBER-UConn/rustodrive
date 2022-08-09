@@ -3,7 +3,7 @@
 /// <https://stackoverflow.com/a/57578431/10521417>
 #[macro_export]
 macro_rules! back_to_enum {
-    ($(#[$meta:meta])* $vis:vis enum $name:ident {
+    ($enum_type:ty, $(#[$meta:meta])* $vis:vis enum $name:ident {
         $($(#[$vmeta:meta])* $vname:ident $(= $val:expr)?,)*
     }) => {
         $(#[$meta])*
@@ -11,12 +11,12 @@ macro_rules! back_to_enum {
             $($(#[$vmeta])* $vname $(= $val)?,)*
         }
 
-        impl std::convert::TryFrom<u32> for $name {
+        impl std::convert::TryFrom<$enum_type> for $name {
             type Error = ();
 
-            fn try_from(v: u32) -> Result<Self, Self::Error> {
+            fn try_from(v: $enum_type) -> Result<Self, Self::Error> {
                 match v {
-                    $(x if x == $name::$vname as u32 => Ok($name::$vname),)*
+                    $(x if x == $name::$vname as $enum_type => Ok($name::$vname),)*
                     _ => Err(()),
                 }
             }
@@ -41,3 +41,24 @@ macro_rules! cfg_match {
         )?)?
     );
 } 
+
+
+
+#[cfg(test)]
+mod tests {
+    use crate::{back_to_enum};
+
+    back_to_enum! { u32, 
+        pub enum TestEnum {
+            A = 0x1, 
+            B = 0x2, 
+            C = 0x3, 
+            D = 0x4,
+        }
+    }
+
+    #[test]
+    fn test_bad_data_conversion() {
+        assert!(TryInto::<TestEnum>::try_into(10).is_err());
+    }
+}

@@ -1,4 +1,4 @@
-use crate::canframe::{CANRequest, CANResponse};
+use crate::{canframe::{CANRequest, CANResponse, ODriveCANFrame}, axis::AxisID};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct ErrorResponse {
@@ -8,10 +8,20 @@ pub struct ErrorResponse {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ODriveError {
-    FailedToSend
+    FailedToSend,
+    NoResponse,
+    ConvertedBadData
 }
 
 pub type ODriveResponse = Result<ResponseType, ErrorResponse>;
+
+#[derive(Debug)]
+pub struct Success<T: TryFrom<ODriveCANFrame>> {
+    pub axis: AxisID,
+    pub sent_request: CANRequest,
+    pub data: T
+}
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ResponseType {
@@ -34,25 +44,5 @@ impl ResponseType {
             ResponseType::Body { request: req, response: _resp} => req,
             ResponseType::Bodyless { req} => req,
         }
-    }
-}
-
-
-pub trait ManyResponses {
-    fn unwrap_all(self) -> Vec<ResponseType>;
-}
-impl ManyResponses for Vec<ODriveResponse> {
-    /// This method calls `.expect()` on all responses.
-    /// This will panic if a single response is an error
-    fn unwrap_all(self) -> Vec<ResponseType> {
-        let mut frames = Vec::new();
-
-        for response in self.into_iter() {
-            match response {
-                Ok(res) => frames.push(res),
-                Err(err) => panic!("Error ({:?}) with request {:?}", err.err, err.request),
-            }
-        }
-        frames
     }
 }
