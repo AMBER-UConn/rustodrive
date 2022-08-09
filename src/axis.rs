@@ -33,7 +33,7 @@ impl<'a> Axis<'a> {
     }
 
     pub fn get_heartbeat(&self) -> CANRequest {
-        ticket(*self.id, Read(Heartbeat), [0; 8])
+        ticket(*self.id, Read(GetHeartbeat), [0; 8])
     }
 
     /// This generates the command to set the state for the `Axis` object in question
