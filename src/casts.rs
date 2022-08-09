@@ -4,7 +4,6 @@ use crate::response::ODriveError;
 use crate::state::{AxisState, ODriveCommand, ReadComm};
 use crate::utils::ResponseManip;
 
-
 #[derive(Debug, PartialEq)]
 pub struct Heartbeat {
     axis_error: AxisError,
@@ -41,7 +40,6 @@ pub struct Bus {
     current: f32,
 }
 
-
 impl TryFrom<CANResponse> for Heartbeat {
     type Error = ODriveError;
 
@@ -73,7 +71,10 @@ impl TryFrom<CANResponse> for Heartbeat {
             Err(_) => return Err(ODriveError::ConvertedBadData),
         };
 
-        return Ok(Heartbeat { axis_error, current_state });
+        return Ok(Heartbeat {
+            axis_error,
+            current_state,
+        });
     }
 }
 
@@ -87,10 +88,10 @@ impl TryFrom<CANResponse> for EncoderEstimates {
         }
 
         let (position_bytes, velocity_bytes) = ResponseManip::split_32(response.data);
-        
-        return Ok(EncoderEstimates { 
-            position: f32::from_le_bytes(position_bytes), 
-            velocity: f32::from_le_bytes(velocity_bytes) 
+
+        return Ok(EncoderEstimates {
+            position: f32::from_le_bytes(position_bytes),
+            velocity: f32::from_le_bytes(velocity_bytes),
         });
     }
 }
@@ -106,9 +107,9 @@ impl TryFrom<CANResponse> for EncoderCount {
 
         let (shadow_bytes, cpr_bytes) = ResponseManip::split_32(response.data);
 
-        return Ok(EncoderCount { 
-            shadow_count: i32::from_le_bytes(shadow_bytes), 
-            cpr_count: i32::from_le_bytes(cpr_bytes)
+        return Ok(EncoderCount {
+            shadow_count: i32::from_le_bytes(shadow_bytes),
+            cpr_count: i32::from_le_bytes(cpr_bytes),
         });
     }
 }
@@ -128,7 +129,6 @@ impl TryFrom<CANResponse> for IQ {
             measured: f32::from_le_bytes(measured_bytes),
         });
     }
-
 }
 
 impl TryFrom<CANResponse> for Temperature {
@@ -179,7 +179,7 @@ impl TryFrom<CANResponse> for MotorError {
         return match motor_error.try_into() {
             Ok(val) => Ok(val),
             Err(_) => Err(ODriveError::ConvertedBadData),
-        }
+        };
     }
 }
 
@@ -209,7 +209,10 @@ impl TryFrom<CANResponse> for SensorlessError {
     fn try_from(response: CANResponse) -> Result<Self, Self::Error> {
         // Check that the command can be converted into the proper type
         if response.cmd != ODriveCommand::Read(ReadComm::SensorlessError) {
-            panic!( "Cannot cast cmd {:?} into type SensorlessError", response.cmd);
+            panic!(
+                "Cannot cast cmd {:?} into type SensorlessError",
+                response.cmd
+            );
         }
 
         let (sensorless_error_bytes, _) = ResponseManip::split_32(response.data);
@@ -226,28 +229,39 @@ impl TryFrom<CANResponse> for () {
     type Error = ODriveError;
 
     fn try_from(response: CANResponse) -> Result<Self, ODriveError> {
-        if let ODriveCommand::Read(_cmd) = response.cmd{
+        if let ODriveCommand::Read(_cmd) = response.cmd {
             panic!("Can only cast a Write command into () since it contains no response, not Read({:?})", response.cmd);
         }
         return Ok(());
     }
 }
 
-// TODO test remaining panics for improper data conversion
 #[cfg(test)]
 mod tests {
     use std::panic;
 
-    use crate::{error::AxisError, state::{AxisState, ReadComm, ODriveCommand}, utils::ResponseManip, canframe::CANResponse};
+    use crate::{
+        canframe::CANResponse,
+        casts::{Bus, Temperature},
+        error::{AxisError, EncoderError, MotorError, SensorlessError},
+        state::{AxisState, ODriveCommand, ReadComm, WriteComm},
+        utils::ResponseManip,
+    };
 
-    use super::{Heartbeat, EncoderEstimates, IQ, EncoderCount};
+    use super::{EncoderCount, EncoderEstimates, Heartbeat, IQ};
+
+    fn bad_convert_test<BadType: TryFrom<CANResponse>>(data: CANResponse) {
+        // Test panic if attempts to cast into wrong return type
+        let result_wrong_type = panic::catch_unwind(|| TryInto::<BadType>::try_into(data));
+        assert!(result_wrong_type.is_err());
+    }
 
     #[test]
     fn test_to_heartbeat() {
         // Test that it successfully converts the CANResponse if it is the proper command
         let axis_error_bytes = u32::to_le_bytes(AxisError::SystemLevel as u32);
         let axis_state = u32::to_le_bytes(AxisState::ClosedLoop as u32);
-        
+
         let combined = ResponseManip::combine_32(axis_error_bytes, axis_state);
 
         let fake_response = CANResponse {
@@ -256,36 +270,22 @@ mod tests {
             data: combined,
         };
 
-        let expected = Heartbeat { axis_error: AxisError::SystemLevel, current_state: AxisState::ClosedLoop };
+        let expected = Heartbeat {
+            axis_error: AxisError::SystemLevel,
+            current_state: AxisState::ClosedLoop,
+        };
 
-        assert_eq!(TryInto::<Heartbeat>::try_into(fake_response).unwrap(), expected); 
-    }
+        assert_eq!(
+            TryInto::<Heartbeat>::try_into(fake_response.clone()).unwrap(),
+            expected
+        );
 
-    #[test]
-    fn test_to_heartbeat_panic() {
-        // Test that it fails to convert to heartbeat if it is the wrong type
-        let result_wrong_type = panic::catch_unwind(|| {
-            let axis_error_bytes = u32::to_le_bytes(AxisError::SystemLevel as u32);
-            let axis_state = u32::to_le_bytes(AxisState::ClosedLoop as u32);
-            
-            let combined = ResponseManip::combine_32(axis_error_bytes, axis_state);
-    
-            let fake_response = CANResponse {
-                axis: 1,
-                cmd: ODriveCommand::Read(ReadComm::Heartbeat),
-                data: combined,
-            };
-    
-            TryInto::<EncoderCount>::try_into(fake_response).unwrap();
-
-        });
-
-        assert!(result_wrong_type.is_err());
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Temperature>(fake_response);
     }
 
     #[test]
     fn test_to_encoder_estimate() {
-
         let encoder_pos_est = f32::to_le_bytes(0.0);
         let encoder_vel_est = f32::to_le_bytes(10.0);
 
@@ -296,20 +296,29 @@ mod tests {
             cmd: ODriveCommand::Read(ReadComm::GetEncoderEstimates),
             data: dat,
         };
-        
-        let expected = EncoderEstimates { position: 0.0, velocity: 10.0 };
 
-        assert_eq!(TryInto::<EncoderEstimates>::try_into(fake_response).unwrap(), expected); 
+        let expected = EncoderEstimates {
+            position: 0.0,
+            velocity: 10.0,
+        };
 
+        assert_eq!(
+            TryInto::<EncoderEstimates>::try_into(fake_response).unwrap(),
+            expected
+        );
+
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Heartbeat>(fake_response);
     }
 
     #[test]
     fn test_encoder_count() {
-
-        let s_c = 69420;
-        let cpr = 8192;
-        let shadow_count = i32::to_le_bytes(s_c);
-        let cpr_count = i32::to_le_bytes(s_c / cpr);
+        let expected = EncoderCount {
+            shadow_count: 69420,
+            cpr_count: 8192,
+        };
+        let shadow_count = i32::to_le_bytes(expected.shadow_count);
+        let cpr_count = i32::to_le_bytes(expected.cpr_count);
 
         let dat = ResponseManip::combine_32(shadow_count, cpr_count);
 
@@ -319,14 +328,17 @@ mod tests {
             data: dat,
         };
 
-        let expected = EncoderCount { shadow_count: s_c, cpr_count: s_c/cpr };
+        assert_eq!(
+            TryInto::<EncoderCount>::try_into(fake_response).unwrap(),
+            expected
+        );
 
-        assert_eq!(TryInto::<EncoderCount>::try_into(fake_response).unwrap(), expected); 
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Temperature>(fake_response);
     }
 
     #[test]
-    fn test_IQ() {
-
+    fn test_to_iq() {
         let iq_setpoint = f32::to_le_bytes(100.0);
         let iq_measured = f32::to_le_bytes(0.0);
 
@@ -337,11 +349,151 @@ mod tests {
             cmd: ODriveCommand::Read(ReadComm::GetIQ),
             data: dat,
         };
-        
-        let expected = IQ { setpoint: 100.0, measured: 0.0 };
 
-        assert_eq!(TryInto::<IQ>::try_into(fake_response).unwrap(), expected); 
+        let expected = IQ {
+            setpoint: 100.0,
+            measured: 0.0,
+        };
 
+        assert_eq!(TryInto::<IQ>::try_into(fake_response).unwrap(), expected);
+
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Temperature>(fake_response);
     }
 
+    #[test]
+    fn test_to_temperature() {
+        let expected = Temperature {
+            inverter: 100.0,
+            motor: 150.0,
+        };
+
+        let (inverter_bytes, motor_bytes) = (
+            f32::to_le_bytes(expected.inverter),
+            f32::to_le_bytes(expected.motor),
+        );
+
+        let data = ResponseManip::combine_32(inverter_bytes, motor_bytes);
+
+        let fake_response = CANResponse {
+            axis: 1,
+            cmd: ODriveCommand::Read(ReadComm::GetTemperature),
+            data: data,
+        };
+
+        assert_eq!(
+            TryInto::<Temperature>::try_into(fake_response).unwrap(),
+            expected
+        );
+
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Heartbeat>(fake_response);
+    }
+
+    #[test]
+    fn test_to_bus() {
+        let expected = Bus {
+            voltage: 24.1,
+            current: 10.02,
+        };
+        let (voltage_bytes, current_bytes) = (
+            f32::to_le_bytes(expected.voltage),
+            f32::to_le_bytes(expected.current),
+        );
+
+        let data = ResponseManip::combine_32(voltage_bytes, current_bytes);
+
+        let fake_response = CANResponse {
+            axis: 1,
+            cmd: ODriveCommand::Read(ReadComm::GetVBusVoltage),
+            data: data,
+        };
+
+        assert_eq!(TryInto::<Bus>::try_into(fake_response).unwrap(), expected);
+
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Temperature>(fake_response);
+    }
+
+    #[test]
+    fn test_to_motor_error() {
+        let expected = MotorError::ControlDeadlineMissed;
+
+        let fake_response = CANResponse {
+            axis: 1,
+            cmd: ODriveCommand::Read(ReadComm::MotorError),
+            data: u64::to_le_bytes(expected.clone() as u64),
+        };
+
+        assert_eq!(
+            TryInto::<MotorError>::try_into(fake_response).unwrap(),
+            expected
+        );
+
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Temperature>(fake_response);
+    }
+
+    #[test]
+    fn test_to_encoder_error() {
+        let expected = EncoderError::CPRPolepairsMismatch;
+
+        let fake_response = CANResponse {
+            axis: 1,
+            cmd: ODriveCommand::Read(ReadComm::EncoderError),
+            data: u64::to_le_bytes(expected.clone() as u64),
+        };
+
+        assert_eq!(
+            TryInto::<EncoderError>::try_into(fake_response).unwrap(),
+            expected
+        );
+
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Temperature>(fake_response);
+    }
+
+    #[test]
+    fn test_to_sensorless_error() {
+        let expected = SensorlessError::UnstableGain;
+        let error_bytes = u32::to_le_bytes(expected.clone() as u32);
+
+        let fake_response = CANResponse {
+            axis: 1,
+            cmd: ODriveCommand::Read(ReadComm::SensorlessError),
+            data: ResponseManip::combine_32(error_bytes, [0u8; 4]),
+        };
+
+        assert_eq!(
+            TryInto::<SensorlessError>::try_into(fake_response).unwrap(),
+            expected
+        );
+
+        // Test panic if attempts to cast into wrong return type
+        bad_convert_test::<Temperature>(fake_response);
+    }
+
+    #[test]
+    fn test_to_void_write_only() {
+        // Test that a write command is the only command that can be cast to ()
+        let fake_response = CANResponse {
+            axis: 1,
+            cmd: ODriveCommand::Write(WriteComm::SetAxisRequestedState),
+            data: [AxisState::Idle as u8, 0, 0, 0, 0, 0, 0, 0],
+        };
+
+        TryInto::<()>::try_into(fake_response).unwrap();
+
+        // Test panic if you convert a read command to ()
+        let fake_response = CANResponse {
+            axis: 1,
+            cmd: ODriveCommand::Read(ReadComm::MotorError),
+            data: u64::to_le_bytes(MotorError::DRVFault as u64),
+        };
+
+        let cant_convert = panic::catch_unwind(|| {
+            TryInto::<()>::try_into(fake_response).unwrap();
+        });
+        assert!(cant_convert.is_err());
+    }
 }
