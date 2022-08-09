@@ -52,7 +52,7 @@ impl TryFrom<CANResponse> for Heartbeat {
         // Controller Status [8-bit]: (start bit 7)
 
         // Check that the command can be converted into the proper type
-        if response.cmd != ODriveCommand::Read(ReadComm::Heartbeat) {
+        if response.cmd != ODriveCommand::Read(ReadComm::GetHeartbeat) {
             panic!("Cannot cast cmd {:?} into type Heartbeat", response.cmd)
         }
 
@@ -252,7 +252,7 @@ mod tests {
 
         let fake_response = CANResponse {
             axis: 1,
-            cmd: ODriveCommand::Read(ReadComm::Heartbeat),
+            cmd: ODriveCommand::Read(ReadComm::GetHeartbeat),
             data: combined,
         };
 
@@ -272,7 +272,7 @@ mod tests {
     
             let fake_response = CANResponse {
                 axis: 1,
-                cmd: ODriveCommand::Read(ReadComm::Heartbeat),
+                cmd: ODriveCommand::Read(ReadComm::GetHeartbeat),
                 data: combined,
             };
     

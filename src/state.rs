@@ -3,7 +3,7 @@ use crate::{back_to_enum};
 back_to_enum! { u32,
     #[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
     pub enum ReadComm {
-        Heartbeat = 0x001,
+        GetHeartbeat = 0x001,
         MotorError = 0x003,
         EncoderError = 0x004,
         SensorlessError = 0x005,
