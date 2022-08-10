@@ -247,7 +247,7 @@ mod tests {
 
         let can_frame = CANRequest {
             axis: 1,
-            cmd: ODriveCommand::Read(ReadComm::Heartbeat),
+            cmd: ODriveCommand::Read(ReadComm::GetHeartbeat),
             data: [0, 0, 0, 0, 0, 0, 0, 0],
         };
         let expected_msg = ThreadCANFrame {
