@@ -19,7 +19,7 @@ pub fn init() -> System {
 
     let event_loop = glium::glutin::event_loop::EventLoop::new();
     let window_builder = glium::glutin::window::WindowBuilder::new()
-        .with_inner_size(glium::glutin::dpi::LogicalSize::new(1280f32, 720f32))
+        .with_inner_size(glium::glutin::dpi::LogicalSize::new(1920f32, 1080f32))
         .with_title("rustodrive")
         .with_resizable(true);
     let context_builder = glium::glutin::ContextBuilder::new();

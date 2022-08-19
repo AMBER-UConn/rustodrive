@@ -44,8 +44,8 @@ pub fn odrive_overview(state: &mut StateParam, ui: &Ui) {
                 TableFlags::ROW_BG | TableFlags::BORDERS_OUTER | TableFlags::NO_BORDERS_IN_BODY,
             ) {
                 ui.table_next_row();
-                for odrv in state.app.odrive_data.clone().iter() {
-                    odrive_row(&mut state.ui, ui, odrv);
+                for (id, odrv) in state.app.odrive_data.clone().iter() {
+                    odrive_row(&mut state.ui, ui, odrv.front().unwrap());
                 }
             }
 

@@ -5,8 +5,10 @@ use strum::IntoEnumIterator;
 
 use crate::readings::{PlottableData};
 
-
-pub fn sin_func(amplitude: f32, period: f32, time: f32, speed: f32) -> [f32; 200] {
+pub fn sin_animation(amplitude: f32, period: f32, time: f32) -> f32 {
+    return amplitude * f32::sin(time / period);
+}
+pub fn sin_func_arr(amplitude: f32, period: f32, time: f32, speed: f32) -> [f32; 200] {
     let mut data = [0.0; 200];
     for i in 0..data.len() {
         data[i] = amplitude * f32::sin((i as f32 + speed * time) / period)

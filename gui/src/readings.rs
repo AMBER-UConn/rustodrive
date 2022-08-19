@@ -1,9 +1,9 @@
-use rustodrive::state::{ODriveAxisState, InputMode, ControlMode};
+use rustodrive::state::{AxisState, InputMode, ControlMode};
 
 #[derive(Clone)]
 pub struct ODriveReadings {
     pub id: usize,
-    pub current_state: ODriveAxisState,
+    pub current_state: AxisState,
     pub input_mode: InputMode,
     pub control_mode: ControlMode,
     // axis_error: AxisError
@@ -34,6 +34,7 @@ impl ODriveReadings {
         ]
     }
 }
+
 
 #[derive(PartialEq, Eq, Hash)]
 pub enum PlottableData {

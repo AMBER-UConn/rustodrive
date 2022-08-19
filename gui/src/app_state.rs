@@ -1,8 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
+use rand::Rng;
 use rustodrive::{
     axis::AxisID,
-    state::{ControlMode, InputMode, ODriveAxisState},
+    state::{ControlMode, InputMode, AxisState},
 };
 
 use crate::{readings::{ODriveReadings, PlottableData::*}, views::{control_panel::ControlPanel, detail::{ODriveDetailState, ODriveDetail}}};
@@ -43,9 +44,9 @@ impl UIState {
         };
 
         let odrive_ui_state = ODriveDetailState {
-            axis_state: odrive.current_state,
-            control_mode: odrive.control_mode,
-            input_mode: odrive.input_mode,
+            axis_state: odrive.current_state.clone(),
+            control_mode: odrive.control_mode.clone(),
+            input_mode: odrive.input_mode.clone(),
             control_mode_val: control_mode_val,
             ..Default::default()
         };
@@ -55,36 +56,25 @@ impl UIState {
 }
 
 pub struct AppState {
-    pub odrive_data: Vec<ODriveReadings>,
+    pub odrive_data: HashMap<AxisID, VecDeque<ODriveReadings>>,
     pub battery: f32,
 }
 
+
+
 impl AppState {
-    pub fn new() -> Self {
-        let mut fake_odrive_data = vec![];
-        for i in 0..4 {
-            fake_odrive_data.push(ODriveReadings {
-                id: i,
-                current_state: ODriveAxisState::Idle,
-                position_estimate: 3141f32,
-                velocity_estimate: 21f32,
-                shadow_count: 23414,
-                encoder_count: 123,
-                motor_temp: 31f32,
-                inverter_temp: 30f32,
-                bus_voltage: 22.31,
-                bus_current: 3.12,
-                input_mode: InputMode::VelRamp,
-                control_mode: ControlMode::VelocityControl,
-            });
-        }
+    pub fn new(odrive_ids: &[usize]) -> Self {
+        let mut odrive_data = HashMap::new();
+        for id in odrive_ids {
+            odrive_data.insert(*id, VecDeque::with_capacity(2000));
+        } 
 
         Self {
-            odrive_data: fake_odrive_data,
-            battery: 0.2,
+            odrive_data: odrive_data,
+            battery: rand::thread_rng().gen_range(0.0..1.0),
         }
     }
-    pub fn set_all_states(&mut self, odrive_state: &ODriveAxisState) {
+    pub fn set_all_states(&mut self, odrive_state: &AxisState) {
         println!("{}", odrive_state.to_string());
     }
 
@@ -100,7 +90,25 @@ impl AppState {
         println!("{}", val.to_string());
     }
 
-    pub fn map(&self, map_func: fn(&ODriveReadings) -> f32) -> Vec<f32> {
-        self.odrive_data.iter().map(map_func).collect::<Vec<f32>>()
+    /// For a specified odrive, this retrieves the property specified by the map function
+    /// for all the readings
+    /// 
+    /// ## Example
+    /// ```rust
+    /// get_prop_readings(1, |odrive| odrive.position_estimate)
+    /// ```
+    /// Returns a Vec<f32> of all the position estimates for Axis 1
+    pub fn get_prop_readings(&self, id: &usize, map_func: fn(&ODriveReadings) -> f32) -> Vec<f32> {
+        let odrive = self.odrive_data.get(id).expect("Failed to get odrive with id");
+
+        odrive.iter().map(|v| map_func(v)).collect::<Vec<f32>>()
+    }
+
+    pub fn add_reading(&mut self, reading: ODriveReadings) {
+        let odrive = self.odrive_data.get_mut(&reading.id).expect("Failed to get odrive with id");
+        if odrive.len() == odrive.capacity() {
+            odrive.pop_front();
+        }
+        odrive.push_back(reading);
     }
 }

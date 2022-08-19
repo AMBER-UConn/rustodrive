@@ -1,8 +1,8 @@
-use crate::app_state::StateParam;
+use crate::app_state::{StateParam, AppState, self};
 use imgui::{InputFloat, Slider, Ui, Window};
 use rustodrive::state::{ControlMode};
 use strum::IntoEnumIterator;
-use crate::readings::PlottableData::*;
+use crate::readings::{PlottableData::*, ODriveReadings};
 
 use super::detail::ODriveDetailState;
 use super::shared::{dropdown, plot_selectors};
@@ -16,6 +16,25 @@ impl ControlPanel {
     pub fn toggle(&mut self) {
         self.open = !self.open;
     }
+}
+
+
+fn average_readings(sources: &[Vec<f32>]) -> Vec<f32> {
+    let mut avg_readings = Vec::new();
+    let num_readings = sources.get(0).expect("No odrives are connected, so no readings received").len();
+    // TODO raise an error if somehow the sources have different lengths
+
+    for reading_index in 0..num_readings {
+        let mut total_val = 0.0;
+
+        for data_src in sources {
+            total_val += data_src[reading_index]
+        }
+
+        avg_readings.push(total_val);
+    }
+
+    return avg_readings;
 }
 
 pub fn control_panel(state: &mut StateParam, ui: &Ui) {
@@ -38,11 +57,17 @@ pub fn control_panel(state: &mut StateParam, ui: &Ui) {
             // Display current and voltage plots
             ui.text("Plots");
             let app_state = &state.app;
+
+            let voltages: Vec<Vec<f32>> = app_state.odrive_data.keys().map(|id| app_state.get_prop_readings(id, |odrv| odrv.bus_voltage)).collect();
+            let currents: Vec<Vec<f32>> = app_state.odrive_data.keys().map(|id| app_state.get_prop_readings(id, |odrv| odrv.bus_voltage)).collect();
+            let motor_temps: Vec<Vec<f32>> = app_state.odrive_data.keys().map(|id| app_state.get_prop_readings(id, |odrv| odrv.bus_voltage)).collect();
+            let inverter_temps: Vec<Vec<f32>> = app_state.odrive_data.keys().map(|id| app_state.get_prop_readings(id, |odrv| odrv.bus_voltage)).collect();
+            
             plot_selectors(ui, &mut ctrl_panel.odrives.plottable_values, &[
-                (BusVoltage, "Avg Voltage [V]", &app_state.map(|odrv| odrv.bus_voltage)),
-                (BusCurrent, "Total Current [I]", &app_state.map(|odrv| odrv.bus_current)),
-                (MotorTemp, "Avg. Motor Temperature °C", &app_state.map(|odrv| odrv.motor_temp)),
-                (InverterTemp, "Avg. Inverter Temperature °C", &app_state.map(|odrv| odrv.inverter_temp)),
+                (BusVoltage, "Avg Voltage [V]", &average_readings(&voltages)),
+                (BusCurrent, "Total Current [I]",&average_readings(&currents)),
+                (MotorTemp, "Avg. Motor Temperature °C", &average_readings(&motor_temps)),
+                (InverterTemp, "Avg. Inverter Temperature °C", &average_readings(&inverter_temps)),
             ]);
 
             let odrive_ui = &mut ctrl_panel.odrives;
