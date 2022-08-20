@@ -1,12 +1,11 @@
 use crate::readings::PlottableData::*;
-use crate::state::{BackendState, StateParam};
-use imgui::{InputFloat, Slider, Ui, Window};
+use crate::shared::components::odrive_mode_component;
+use crate::shared::state::{BackendState, StateParam, ODriveDetailState, DisplayedPlots};
+use crate::shared::widgets::plot_selectors;
+use imgui::{Ui, Window};
 use rustodrive::axis::AxisID;
-use rustodrive::state::ControlMode;
 use strum::IntoEnumIterator;
 
-use super::detail::{DisplayedPlots, ODriveDetailState};
-use super::shared::{dropdown, plot_selectors};
 
 // -------------------------- View/Window State --------------------------
 /// State for the control panel window. We use [`ODriveDetailState`] even though this
@@ -90,7 +89,16 @@ pub fn control_panel(state: &mut StateParam, ui: &Ui) {
             );
 
             // Display axis state/control mode/input mode widget for all odrives
-            odrive_mode_widget(ui, &mut state.backend, &mut ctrl_panel.odrives)
+            odrive_mode_component(ui, &mut ctrl_panel.odrives);
+
+            // If the button is clicked, apply the changes in the UI state to the backend state
+            if ui.button("Apply changes") {
+                let odrive_gui_state = &ctrl_panel.odrives;
+                state.backend.set_all_states(&odrive_gui_state.axis_state);
+                state.backend.set_control_mode(&odrive_gui_state.control_mode);
+                state.backend.set_input_mode(&odrive_gui_state.input_mode);
+                state.backend.set_control_val(&odrive_gui_state.control_mode_val);
+            }
         });
 }
 
@@ -148,45 +156,4 @@ fn average_selectable_plots(
             ),
         ],
     );
-}
-
-fn odrive_mode_widget(ui: &Ui, backend_state: &mut BackendState, all_odrive_gui_state: &mut ODriveDetailState) {
-
-    dropdown(ui, "ODrive State", &mut all_odrive_gui_state.axis_state);
-    ui.separator();
-
-    // If the control mode is switched, we need to reset the control mode value
-    let before_mode = all_odrive_gui_state.control_mode.clone();
-    dropdown(ui, "Control Mode", &mut all_odrive_gui_state.control_mode);
-    if before_mode != all_odrive_gui_state.control_mode {
-        all_odrive_gui_state.control_mode_val = 0.0;
-    }
-
-    // Display the appropriate slider ranges depending on the mode
-    match all_odrive_gui_state.control_mode {
-        ControlMode::VoltageControl => {
-            Slider::new("Voltage", 11.0, 24.0).build(ui, &mut all_odrive_gui_state.control_mode_val)
-        }
-        ControlMode::TorqueControl => {
-            Slider::new("Torque", 0.0, 0.22).build(ui, &mut all_odrive_gui_state.control_mode_val)
-        }
-        ControlMode::VelocityControl => {
-            Slider::new("Velocity", 0.0, 50.0).build(ui, &mut all_odrive_gui_state.control_mode_val)
-        }
-        ControlMode::PositionControl => {
-            InputFloat::new(ui, "Position", &mut all_odrive_gui_state.control_mode_val).build()
-        }
-    };
-    ui.separator();
-
-    dropdown(ui, "Input Mode", &mut all_odrive_gui_state.input_mode);
-    ui.separator();
-
-    // If the button is clicked, apply the changes in the UI state to the backend state
-    if ui.button("Apply changes") {
-        backend_state.set_all_states(&all_odrive_gui_state.axis_state);
-        backend_state.set_control_mode(&all_odrive_gui_state.control_mode);
-        backend_state.set_input_mode(&all_odrive_gui_state.input_mode);
-        backend_state.set_control_val(&all_odrive_gui_state.control_mode_val);
-    }
 }

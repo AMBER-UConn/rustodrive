@@ -7,10 +7,9 @@ use rustodrive::{
 };
 
 use crate::{
-    readings::{ODriveReadings, PlottableData::*}, 
+    readings::{ODriveReadings, PlottableData::{*, self}}, 
     views::{
-        control_panel::ControlPanel, 
-        detail::{ODriveDetailState, ODriveDetail}
+        control_panel::ControlPanel, detail::ODriveDetail, 
     }
 };
 
@@ -136,3 +135,14 @@ impl BackendState {
         odrive.push_back(reading);
     }
 }
+
+pub struct ODriveDetailState {
+    pub axis_state: AxisState,
+    pub control_mode: ControlMode,
+    pub input_mode: InputMode,
+    pub control_mode_val: f32,
+    pub plottable_values: DisplayedPlots,
+}
+
+/// State regarding which plots to show
+pub type DisplayedPlots = HashMap<PlottableData, bool>;

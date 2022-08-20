@@ -1,7 +1,7 @@
-use crate::{readings::ODriveReadings, state::{UIState, StateParam}};
+use crate::{readings::ODriveReadings, shared::state::{UIState, StateParam}};
 use imgui::{Selectable, StyleColor, TableColumnSetup, TableFlags, Ui, Window};
 
-fn odrive_row(app_state: &mut UIState, ui: &Ui, odrv: &ODriveReadings) {
+fn odrive_row(ui_state: &mut UIState, ui: &Ui, odrv: &ODriveReadings) {
     ui.table_set_column_index(0);
 
     let row_is_selected = Selectable::new(&odrv.id.to_string())
@@ -9,7 +9,7 @@ fn odrive_row(app_state: &mut UIState, ui: &Ui, odrv: &ODriveReadings) {
         .allow_double_click(true)
         .build(ui);
     if row_is_selected {
-        app_state.detail_view(odrv);
+        ui_state.detail_view(odrv);
     }
 
     ui.table_next_column();
@@ -44,8 +44,8 @@ pub fn odrive_overview(state: &mut StateParam, ui: &Ui) {
                 TableFlags::ROW_BG | TableFlags::BORDERS_OUTER | TableFlags::NO_BORDERS_IN_BODY,
             ) {
                 ui.table_next_row();
-                for (id, odrv) in state.backend.odrive_data.clone().iter() {
-                    odrive_row(&mut state.ui, ui, odrv.front().unwrap());
+                for (_id, odrv) in state.backend.odrive_data.clone().iter() {
+                    odrive_row(&mut state.ui, ui, odrv.back().unwrap());
                 }
             }
 

@@ -3,16 +3,16 @@ use std::f32::consts::PI;
 use rustodrive::state::{AxisState, ControlMode, InputMode};
 
 use crate::{
-    state::{BackendState, StateParam, UIState},
+    shared::state::{BackendState, StateParam, UIState},
     readings::ODriveReadings,
     support,
     views::{control_panel, detail, overview},
 };
 
 /// This adds a fake odrive reading for a given time step
-fn mock_data(time: &f32, app_state: &mut BackendState) {
+fn mock_data(time: &f32, backend_state: &mut BackendState) {
     for id in 0..6 {
-        app_state.add_reading(ODriveReadings {
+        backend_state.add_reading(ODriveReadings {
             id: id,
             current_state: AxisState::Idle,
             input_mode: InputMode::PosFilter,
