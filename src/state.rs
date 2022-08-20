@@ -1,5 +1,6 @@
 use crate::{back_to_enum};
 
+// TODO update to use the latest version of the ODrive CAN API (0.6.3)
 back_to_enum! { u32,
     #[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
     pub enum ReadComm {

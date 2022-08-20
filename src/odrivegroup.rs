@@ -35,7 +35,8 @@ use crate::{
 /// use rustodrive::{
 ///     canproxy::CANProxy,
 ///     odrivegroup::{ODriveGroup},
-///     state::ODriveAxisState::*, threads::ReadWriteCANThread
+///     state::AxisState::*, threads::ReadWriteCANThread,
+///     utils::ResultAll,
 /// };
 ///
 /// fn main() {
@@ -54,7 +55,7 @@ use crate::{
 ///     let odrives = ODriveGroup::new(can_rw, &[1, 2, 3, 4]);
 
 ///     println!("Starting calibration sequence");
-///     odrives.all_axes(|ax| ax.set_state(FullCalibrationSequence));
+///     odrives.all_axes::<(), _>(|ax| ax.set_state(FullCalibrationSequence)).unwrap_all();
 ///     println!("Motors fully calibrated!")
 /// }
 /// ```
@@ -87,14 +88,18 @@ impl<'a> ODriveGroup<'a> {
     ///
     /// ```
     /// use std::time::Duration;
-    /// use rustodrive::odrivegroup::ODriveGroup;
-    /// use rustodrive::canproxy::CANProxy;
-    /// use rustodrive::state::ODriveAxisState::FullCalibrationSequence;
-    ///
+    /// use rustodrive::{
+    ///     odrivegroup::ODriveGroup,
+    ///     canproxy::CANProxy,
+    ///     state::AxisState::FullCalibrationSequence,
+    ///     utils::ResultAll,
+    ///     casts::Temperature,
+    ///     response::Success
+    ///};
     /// let mut can_proxy = CANProxy::new("can0");
     /// can_proxy.register_rw("thread 1", |can_rw| {
     ///     let odrives = ODriveGroup::new(can_rw, &[1, 2, 3, 4]);
-    ///     odrives.all_axes(|ax| ax.set_state(FullCalibrationSequence));
+    ///     let response = odrives.all_axes::<Temperature, _>(|ax| ax.get_temperatures()).unwrap_all();
     /// });
     ///
     /// let stop = can_proxy.begin();
@@ -137,12 +142,12 @@ impl<'a> ODriveGroup<'a> {
     /// use std::time::Duration;
     /// use rustodrive::odrivegroup::ODriveGroup;
     /// use rustodrive::canproxy::CANProxy;
-    /// use rustodrive::state::ODriveAxisState::FullCalibrationSequence;
+    /// use rustodrive::state::AxisState::FullCalibrationSequence;
     ///
     /// let mut can_proxy = CANProxy::new("can0");
     /// can_proxy.register_rw("thread 1", |can_rw| {
     ///     let odrives = ODriveGroup::new(can_rw, &[1, 2, 3, 4]);
-    ///     odrives.axis(&1, |ax| ax.set_state(FullCalibrationSequence));
+    ///     odrives.axis::<(), _>(&1, |ax| ax.set_state(FullCalibrationSequence));
     /// });
     ///
     /// let stop = can_proxy.begin();

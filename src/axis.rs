@@ -44,7 +44,7 @@ impl<'a> Axis<'a> {
             [state as u8, 0, 0, 0, 0, 0, 0, 0],
         )
     }
-
+    
     pub fn get_temperatures(&self) -> CANRequest {
         ticket(*self.id, Read(GetTemperature), [0; 8])
     }
