@@ -1,4 +1,4 @@
-use crate::app_state::{StateParam, AppState, self};
+use crate::app_state::{StateParam, BackendState, self};
 use imgui::{InputFloat, Slider, Ui, Window};
 use rustodrive::state::{ControlMode};
 use strum::IntoEnumIterator;

@@ -1,11 +1,16 @@
-
 use std::f32::consts::PI;
 
-use rustodrive::state::{AxisState, InputMode, ControlMode};
+use rustodrive::state::{AxisState, ControlMode, InputMode};
 
-use crate::{support, views::{overview, detail, control_panel}, app_state::{UIState, AppState, StateParam}, readings::ODriveReadings};
+use crate::{
+    app_state::{BackendState, StateParam, UIState},
+    readings::ODriveReadings,
+    support,
+    views::{control_panel, detail, overview},
+};
 
-fn mock_data(time: &f32, app_state: &mut AppState) {
+/// This adds a fake odrive reading for a given time step
+fn mock_data(time: &f32, app_state: &mut BackendState) {
     for id in 0..6 {
         app_state.add_reading(ODriveReadings {
             id: id,
@@ -19,26 +24,35 @@ fn mock_data(time: &f32, app_state: &mut AppState) {
             motor_temp: id as f32 * 38.0,
             inverter_temp: id as f32 * 38.0,
             bus_voltage: id as f32 * 24.0 * f32::sin(33.0 + time / (PI)),
-            bus_current: id as f32 * 10.0 * f32::sin(33.0 + time / (PI))
+            bus_current: id as f32 * 10.0 * f32::sin(33.0 + time / (PI)),
         })
     }
 }
 
+/// This is the entrypoint of the user interface application
 pub fn ui_main() {
-    let system = support::init();
-    let mut state = StateParam { ui: UIState::new(), app: AppState::new(&[0, 1, 2, 3, 4, 5]) };
-    mock_data(&0.0, &mut state.app);
+    let imgui = support::init();
+    let mut state = StateParam {
+        ui: UIState::new(),
+        app: BackendState::new(&[0, 1, 2, 3, 4, 5]),
+    };
 
-    system.main_loop( move |_, ui| {
-        ui.show_demo_window(&mut true);
+    imgui.main_loop(move |_, ui| {
+        // Retrieve the data from the odrives here
+        mock_data(&(ui.time() as f32), &mut state.app);
+
+        // Uncomment this to see a demo of features available in imgui
+        // ui.show_demo_window(&mut true);
+
+        // Display the table
         overview::odrive_overview(&mut state, ui);
 
-        // Display the detail pages
+        // Display the detail windows
         for (odrive_id, odrive_detail) in state.ui.details.iter_mut() {
             detail::detail(&mut state.app, odrive_id, odrive_detail, ui);
         }
-        control_panel::control_panel(&mut state, ui);
 
-        mock_data(&(ui.time() as f32), &mut state.app);
+        // Display the all-odrives control panel
+        control_panel::control_panel(&mut state, ui);
     });
 }

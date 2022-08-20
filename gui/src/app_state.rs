@@ -6,13 +6,26 @@ use rustodrive::{
     state::{ControlMode, InputMode, AxisState},
 };
 
-use crate::{readings::{ODriveReadings, PlottableData::*}, views::{control_panel::ControlPanel, detail::{ODriveDetailState, ODriveDetail}}};
+use crate::{
+    readings::{ODriveReadings, PlottableData::*}, 
+    views::{
+        control_panel::ControlPanel, 
+        detail::{ODriveDetailState, ODriveDetail}
+    }
+};
 
+/// This is a helpful struct for passing both UI state and Backend state 
+/// to functions that are displaying received data from odrives or
+/// changing state related to the GUI itself (ex: button presses, dropdown selects)
 pub struct StateParam {
     pub ui: UIState,
-    pub app: AppState,
+    pub app: BackendState,
 }
 
+
+/// UIState is in charge of state related to windows within the application.
+/// Currently we are managing state for the control panel and for detail views
+/// for specific odrives
 pub struct UIState {
     pub control_panel: ControlPanel,
     pub details: HashMap<AxisID, ODriveDetail>,
@@ -55,14 +68,16 @@ impl UIState {
     }
 }
 
-pub struct AppState {
+
+/// This struct is in charge of storing data received via CAN
+/// regarding ODrive information such as battery, position, velocity,
+/// etc.
+pub struct BackendState {
     pub odrive_data: HashMap<AxisID, VecDeque<ODriveReadings>>,
     pub battery: f32,
 }
 
-
-
-impl AppState {
+impl BackendState {
     pub fn new(odrive_ids: &[usize]) -> Self {
         let mut odrive_data = HashMap::new();
         for id in odrive_ids {
@@ -74,25 +89,33 @@ impl AppState {
             battery: rand::thread_rng().gen_range(0.0..1.0),
         }
     }
+
+    /// **UNIMPLEMENTED** 
+    /// This function should set the states of all odrives via CAN
     pub fn set_all_states(&mut self, odrive_state: &AxisState) {
         println!("{}", odrive_state.to_string());
     }
 
+    /// **UNIMPLEMENTED** 
+    /// This function should set the control mode of all odrives via CAN
     pub fn set_control_mode(&mut self, control_mode: &ControlMode) {
         println!("{}", control_mode.to_string());
     }
 
+    /// **UNIMPLEMENTED** 
+    /// This function should set the input mode of all the odrives via CAN
     pub fn set_input_mode(&mut self, input_mode: &InputMode) {
         println!("{}", input_mode.to_string());
     }
 
+    /// **UNIMPLEMENTED** 
+    /// This function sets the position, velocity, torque, or current based
+    /// on what control mode is specified
     pub fn set_control_val(&mut self, val: &f32) {
         println!("{}", val.to_string());
     }
 
-    /// For a specified odrive, this retrieves the property specified by the map function
-    /// for all the readings
-    /// 
+    /// For a specified odrive, this retrieves all the data for a specific field of the odrive
     /// ## Example
     /// ```rust
     /// get_prop_readings(1, |odrive| odrive.position_estimate)
@@ -104,6 +127,7 @@ impl AppState {
         odrive.iter().map(|v| map_func(v)).collect::<Vec<f32>>()
     }
 
+    /// This adds a reading to the backend state
     pub fn add_reading(&mut self, reading: ODriveReadings) {
         let odrive = self.odrive_data.get_mut(&reading.id).expect("Failed to get odrive with id");
         if odrive.len() == odrive.capacity() {

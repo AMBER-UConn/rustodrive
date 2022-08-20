@@ -4,7 +4,7 @@ use imgui::{InputFloat, Slider, Ui, Window};
 use rustodrive::state::{ControlMode, InputMode, AxisState};
 
 use crate::{
-    app_state::AppState,
+    app_state::BackendState,
     readings::PlottableData::{self, *},
 };
 
@@ -45,7 +45,7 @@ pub struct ODriveDetail {
 }
 
 pub fn detail(
-    app_state: &mut AppState,
+    app_state: &mut BackendState,
     odrive_id: &usize,
     odrive_detail: &mut ODriveDetail,
     ui: &Ui,

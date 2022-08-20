@@ -1,5 +1,7 @@
-use rustodrive::state::{AxisState, InputMode, ControlMode};
+use rustodrive::state::{AxisState, ControlMode, InputMode};
 
+/// This struct stores all the readings about a particular odrive. 
+/// The fields should be populated with calls from the rustodrive library
 #[derive(Clone)]
 pub struct ODriveReadings {
     pub id: usize,
@@ -35,7 +37,8 @@ impl ODriveReadings {
     }
 }
 
-
+/// This enum stores the types of data from the ODriveReadings can be plotted.
+/// For instance we can plot MotorTemperature, but can't plot an AxisState.
 #[derive(PartialEq, Eq, Hash)]
 pub enum PlottableData {
     PosEstimate,
@@ -45,5 +48,5 @@ pub enum PlottableData {
     MotorTemp,
     InverterTemp,
     BusVoltage,
-    BusCurrent
+    BusCurrent,
 }
