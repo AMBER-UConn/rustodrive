@@ -5,18 +5,14 @@ use strum::IntoEnumIterator;
 
 use crate::readings::{PlottableData};
 
-pub fn sin_animation(amplitude: f32, period: f32, time: f32) -> f32 {
-    return amplitude * f32::sin(time / period);
-}
-pub fn sin_func_arr(amplitude: f32, period: f32, time: f32, speed: f32) -> [f32; 200] {
-    let mut data = [0.0; 200];
-    for i in 0..data.len() {
-        data[i] = amplitude * f32::sin((i as f32 + speed * time) / period)
-    }
-    data
-}
+type Label<'a> = &'a str;
 
-pub fn autoscale_plot(ui: &Ui, label: &str, data: &[f32]) {
+/// This creates a plot that autoscales based on the minimum and maximum values of the plotted data
+/// # Arguments
+/// * `ui` - An UI object from the imgui-rs library
+/// * `label` - The name of the plot
+/// * `data` - a slice of f32s to plot
+pub fn autoscale_plot(ui: &Ui, label: Label, data: &[f32]) {
     let line_color = ui.push_style_color(StyleColor::PlotLines, [255f32, 0f32, 0f32, 1f32]);
     
     let max_val = data.iter().max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).expect("couldn't find max of graph");
@@ -33,7 +29,12 @@ pub fn autoscale_plot(ui: &Ui, label: &str, data: &[f32]) {
     line_color.pop();
 }
 
-pub fn dropdown<T: std::fmt::Display + IntoEnumIterator>(ui: &Ui, label: &str, selected: &mut T) {
+/// This function creates a dropdown selector for an enum if it derives `IntoIter` and `strum_macros::Display`
+/// # Arguments
+/// * `ui` - An UI object from the imgui-rs library
+/// * `label` - the name of the dropdown
+/// * `selected` - This sets the passed reference to the value selected by the user
+pub fn dropdown<T: std::fmt::Display + IntoEnumIterator>(ui: &Ui, label: Label, selected: &mut T) {
     if let Some(listbox) = ui.begin_combo(label, selected.to_string()) {
         for mode in T::iter() {
             if Selectable::new(mode.to_string()).build(ui) {
@@ -43,7 +44,29 @@ pub fn dropdown<T: std::fmt::Display + IntoEnumIterator>(ui: &Ui, label: &str, s
         listbox.end()
     }
 }
-type Label<'a> = &'a str;
+
+
+/// This draws a widget that allows you to select what plots to display on the screen
+/// # Arguments
+/// * `ui` - An UI object from the imgui-rs library
+/// * `checked_state` - A hashmap of what data to plot and it's checked/visible state
+/// * `options` - Information for displaying the appropriate plot, with a label, and passing the data to plot
+/// 
+/// # Example
+/// ```rust 
+/// let plot_state = HashMap::from([
+///     (MotorTemp, false),
+///     (InverterTemp, false),
+///     (BusVoltage, true),
+///     (BusCurrent, true),
+/// ]),
+/// plot_selectors(ui, plot_state, &[
+///     (BusVoltage, "Voltage [V]", &[24.1, 23.99, 24.0]),
+///     (BusCurrent, "Current [I]", &[3.2, 3.0, 3.1]),
+///     (MotorTemp, "Motor Temperature °C", &[27.1, 27.0, 27.0]),
+///     (InverterTemp, "Inverter Temperature °C", &[27.0, 27.0, 27.0]),
+/// ])
+/// ```
 pub fn plot_selectors(ui: &Ui, checked_state: &mut HashMap<PlottableData, bool>, options: &[(PlottableData, Label, &[f32])]){
     // Display the plots that were selected
     for (data_type, label, data) in options.iter() {
