@@ -1,21 +1,24 @@
 use std::collections::HashMap;
 
 use imgui::{InputFloat, Slider, Ui, Window};
-use rustodrive::state::{ControlMode, InputMode, AxisState};
+use rustodrive::state::{AxisState, ControlMode, InputMode};
 
 use crate::{
-    app_state::BackendState,
     readings::PlottableData::{self, *},
+    state::BackendState,
 };
 
 use super::shared::{dropdown, plot_selectors};
+
+/// State regarding which plots to show
+pub type DisplayedPlots = HashMap<PlottableData, bool>;
 
 pub struct ODriveDetailState {
     pub axis_state: AxisState,
     pub control_mode: ControlMode,
     pub input_mode: InputMode,
     pub control_mode_val: f32,
-    pub plottable_values: HashMap<PlottableData, bool>,
+    pub plottable_values: DisplayedPlots,
 }
 
 impl Default for ODriveDetailState {
@@ -71,32 +74,32 @@ pub fn detail(
                     (
                         BusCurrent,
                         "Current [I]",
-                        &app_state.get_prop_readings(odrive_id,|odrv| odrv.bus_current),
+                        &app_state.get_prop_readings(odrive_id, |odrv| odrv.bus_current),
                     ),
                     (
                         PosEstimate,
                         "Position Estimate",
-                        &app_state.get_prop_readings(odrive_id,|odrv| odrv.position_estimate),
+                        &app_state.get_prop_readings(odrive_id, |odrv| odrv.position_estimate),
                     ),
                     (
                         VelEstimate,
                         "Velocity Estimate",
-                        &app_state.get_prop_readings(odrive_id,|odrv| odrv.velocity_estimate),
+                        &app_state.get_prop_readings(odrive_id, |odrv| odrv.velocity_estimate),
                     ),
                     (
                         ShadowCount,
                         "Shadow Count",
-                        &app_state.get_prop_readings(odrive_id,|odrv| odrv.shadow_count as f32),
+                        &app_state.get_prop_readings(odrive_id, |odrv| odrv.shadow_count as f32),
                     ),
                     (
                         EncoderCount,
                         "Encoder Count",
-                        &app_state.get_prop_readings(odrive_id,|odrv| odrv.encoder_count as f32),
+                        &app_state.get_prop_readings(odrive_id, |odrv| odrv.encoder_count as f32),
                     ),
                     (
                         MotorTemp,
                         "Motor Temperature °C",
-                        &app_state.get_prop_readings(odrive_id,|odrv| odrv.motor_temp),
+                        &app_state.get_prop_readings(odrive_id, |odrv| odrv.motor_temp),
                     ),
                     (
                         InverterTemp,

@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use rustodrive::state::{AxisState, ControlMode, InputMode};
 
 use crate::{
-    app_state::{BackendState, StateParam, UIState},
+    state::{BackendState, StateParam, UIState},
     readings::ODriveReadings,
     support,
     views::{control_panel, detail, overview},
@@ -34,12 +34,12 @@ pub fn ui_main() {
     let imgui = support::init();
     let mut state = StateParam {
         ui: UIState::new(),
-        app: BackendState::new(&[0, 1, 2, 3, 4, 5]),
+        backend: BackendState::new(&[0, 1, 2, 3, 4, 5]),
     };
 
     imgui.main_loop(move |_, ui| {
         // Retrieve the data from the odrives here
-        mock_data(&(ui.time() as f32), &mut state.app);
+        mock_data(&(ui.time() as f32), &mut state.backend);
 
         // Uncomment this to see a demo of features available in imgui
         // ui.show_demo_window(&mut true);
@@ -49,7 +49,7 @@ pub fn ui_main() {
 
         // Display the detail windows
         for (odrive_id, odrive_detail) in state.ui.details.iter_mut() {
-            detail::detail(&mut state.app, odrive_id, odrive_detail, ui);
+            detail::detail(&mut state.backend, odrive_id, odrive_detail, ui);
         }
 
         // Display the all-odrives control panel

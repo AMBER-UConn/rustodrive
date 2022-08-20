@@ -19,7 +19,7 @@ use crate::{
 /// changing state related to the GUI itself (ex: button presses, dropdown selects)
 pub struct StateParam {
     pub ui: UIState,
-    pub app: BackendState,
+    pub backend: BackendState,
 }
 
 
