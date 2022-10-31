@@ -35,7 +35,7 @@ use crate::{
 /// use rustodrive::{
 ///     canproxy::CANProxy,
 ///     odrivegroup::{ODriveGroup},
-///     state::ODriveAxisState::*, threads::ReadWriteCANThread
+///     state::AxisState::*, threads::ReadWriteCANThread
 /// };
 ///
 /// fn main() {
@@ -89,7 +89,7 @@ impl<'a> ODriveGroup<'a> {
     /// use std::time::Duration;
     /// use rustodrive::odrivegroup::ODriveGroup;
     /// use rustodrive::canproxy::CANProxy;
-    /// use rustodrive::state::ODriveAxisState::FullCalibrationSequence;
+    /// use rustodrive::state::AxisState::FullCalibrationSequence;
     ///
     /// let mut can_proxy = CANProxy::new("can0");
     /// can_proxy.register_rw("thread 1", |can_rw| {
@@ -137,7 +137,7 @@ impl<'a> ODriveGroup<'a> {
     /// use std::time::Duration;
     /// use rustodrive::odrivegroup::ODriveGroup;
     /// use rustodrive::canproxy::CANProxy;
-    /// use rustodrive::state::ODriveAxisState::FullCalibrationSequence;
+    /// use rustodrive::state::AxisState::FullCalibrationSequence;
     ///
     /// let mut can_proxy = CANProxy::new("can0");
     /// can_proxy.register_rw("thread 1", |can_rw| {
